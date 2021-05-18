@@ -54,7 +54,12 @@ class FilterChainBase
     const std::string& filterChainNamespace, ros::NodeHandle filterNodeHandle, ros::NodeHandle topicNodeHandle,
     const bool useSharedPtrMessages, const size_t inputQueueSize, const size_t outputQueueSize)
   {
-    this->filterChain.configure(filterChainNamespace, filterNodeHandle);
+    if (!this->filterChain.configure(filterChainNamespace, filterNodeHandle))
+    {
+      ROS_ERROR_STREAM("Configuration of filter chain for "
+        << ros::message_traits::DataType<T>::value() << " is invalid, the chain will not be run.");
+      throw std::runtime_error("Filter configuration error");
+    }
 
     ROS_INFO_STREAM("Configured filter chain of type " << ros::message_traits::DataType<T>::value() <<
       " from namespace " << filterNodeHandle.getNamespace() << "/" << filterChainNamespace);
