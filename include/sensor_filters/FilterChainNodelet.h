@@ -72,4 +72,4 @@ class TYPE ## FilterChainNodelet : public FilterChainNodelet<sensor_msgs::TYPE> 
   public: TYPE ## FilterChainNodelet() : FilterChainNodelet(CONFIG "_filter_chain") {} \
 }; \
 }\
-PLUGINLIB_EXPORT_CLASS(sensor_filters:: TYPE ## FilterChainNodelet, nodelet::Nodelet)
+PLUGINLIB_EXPORT_CLASS(sensor_filters::TYPE ## FilterChainNodelet, nodelet::Nodelet)
