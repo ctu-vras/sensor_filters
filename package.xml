@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>sensor_filters</name>
+  <version>1.0.0</version>
+  <description>Simple sensor filter chain nodes and nodelets</description>
+
+  <maintainer email="peckama2@fel.cvut.cz">Martin Pecka</maintainer>
+  <author email="peckama2@fel.cvut.cz">Martin Pecka</author>
+
+  <license>BSD</license>
+
+  <url type="website">https://github.com/ctu-vras/sensor_filters</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>filters</depend>
+  <depend>nodelet</depend>
+  <depend>roscpp</depend>
+  <depend>sensor_msgs</depend>
+
+  <export>
+    <nodelet plugin="${prefix}/nodelets.xml" />
+  </export>
+</package>

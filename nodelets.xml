@@ -1,0 +1,91 @@
+<library path="lib/libcompressed_image_filter_chain_nodelet">
+  <class name="sensor_filters/compressed_image_filter_chain" type="sensor_filters::CompressedImageFilterChainNodelet" base_class_type="nodelet::Nodelet">
+    <description>
+      Nodelet running a CompressedImage filter chain.
+    </description>
+  </class>
+</library>
+<library path="lib/libimage_filter_chain_nodelet">
+  <class name="sensor_filters/image_filter_chain" type="sensor_filters::ImageFilterChainNodelet" base_class_type="nodelet::Nodelet">
+    <description>
+      Nodelet running a Image filter chain.
+    </description>
+  </class>
+</library>
+<library path="lib/libimu_filter_chain_nodelet">
+  <class name="sensor_filters/imu_filter_chain" type="sensor_filters::ImuFilterChainNodelet" base_class_type="nodelet::Nodelet">
+    <description>
+      Nodelet running a Imu filter chain.
+    </description>
+  </class>
+</library>
+<library path="lib/libjoy_filter_chain_nodelet">
+  <class name="sensor_filters/joy_filter_chain" type="sensor_filters::JoyFilterChainNodelet" base_class_type="nodelet::Nodelet">
+  <description>
+    Nodelet running a Joy filter chain.
+  </description>
+  </class>
+</library>
+<library path="lib/liblaserscan_filter_chain_nodelet">
+  <class name="sensor_filters/laserscan_filter_chain" type="sensor_filters::LaserScanFilterChainNodelet" base_class_type="nodelet::Nodelet">
+  <description>
+    Nodelet running a LaserScan filter chain.
+  </description>
+  </class>
+</library>
+<library path="lib/libmagneticfield_filter_chain_nodelet">
+  <class name="sensor_filters/magneticfield_filter_chain" type="sensor_filters::MagneticFieldFilterChainNodelet" base_class_type="nodelet::Nodelet">
+    <description>
+      Nodelet running a MagneticField filter chain.
+    </description>
+  </class>
+</library>
+<library path="lib/libmultiecholaserscan_filter_chain_nodelet">
+  <class name="sensor_filters/multiecholaserscan_filter_chain" type="sensor_filters::MultiEchoLaserScanFilterChainNodelet" base_class_type="nodelet::Nodelet">
+    <description>
+      Nodelet running a MultiEchoLaserScan filter chain.
+    </description>
+  </class>
+</library>
+<library path="lib/libnavsatfix_filter_chain_nodelet">
+  <class name="sensor_filters/navsatfix_filter_chain" type="sensor_filters::NavSatFixFilterChainNodelet" base_class_type="nodelet::Nodelet">
+    <description>
+      Nodelet running a NavSatFix filter chain.
+    </description>
+  </class>
+</library>
+<library path="lib/libpointcloud_filter_chain_nodelet">
+  <class name="sensor_filters/pointcloud_filter_chain" type="sensor_filters::PointCloudFilterChainNodelet" base_class_type="nodelet::Nodelet">
+    <description>
+      Nodelet running a PointCloud filter chain.
+    </description>
+  </class>
+</library>
+<library path="lib/libpointcloud2_filter_chain_nodelet">
+  <class name="sensor_filters/pointcloud2_filter_chain" type="sensor_filters::PointCloud2FilterChainNodelet" base_class_type="nodelet::Nodelet">
+    <description>
+      Nodelet running a PointCloud2 filter chain.
+    </description>
+  </class>
+</library>
+<library path="lib/librange_filter_chain_nodelet">
+  <class name="sensor_filters/range_filter_chain" type="sensor_filters::RangeFilterChainNodelet" base_class_type="nodelet::Nodelet">
+    <description>
+      Nodelet running a Range filter chain.
+    </description>
+  </class>
+</library>
+<library path="lib/librelativehumidity_filter_chain_nodelet">
+  <class name="sensor_filters/relativehumidity_filter_chain" type="sensor_filters::RelativeHumidityFilterChainNodelet" base_class_type="nodelet::Nodelet">
+    <description>
+      Nodelet running a RelativeHumidity filter chain.
+    </description>
+  </class>
+</library>
+<library path="lib/libtemperature_filter_chain_nodelet">
+  <class name="sensor_filters/temperature_filter_chain" type="sensor_filters::TemperatureFilterChainNodelet" base_class_type="nodelet::Nodelet">
+    <description>
+      Nodelet running a Temperature filter chain.
+    </description>
+  </class>
+</library>
