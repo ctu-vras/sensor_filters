@@ -43,8 +43,10 @@ class FilterChainBase
   protected: filters::FilterChain<T> filterChain;
   protected: T msg;
 
+  protected: typedef ros::message_traits::DataType<T> DataType;
+
   public: FilterChainBase() :
-    filterChain(ros::message_traits::DataType<T>::value())
+    filterChain(std::string(DataType::value()).replace(std::string(DataType::value()).find('/'), 1, "::"))
   {
   }
 
@@ -57,11 +59,11 @@ class FilterChainBase
     if (!this->filterChain.configure(filterChainNamespace, filterNodeHandle))
     {
       ROS_ERROR_STREAM("Configuration of filter chain for "
-        << ros::message_traits::DataType<T>::value() << " is invalid, the chain will not be run.");
+        << DataType::value() << " is invalid, the chain will not be run.");
       throw std::runtime_error("Filter configuration error");
     }
 
-    ROS_INFO_STREAM("Configured filter chain of type " << ros::message_traits::DataType<T>::value() <<
+    ROS_INFO_STREAM("Configured filter chain of type " << DataType::value() <<
       " from namespace " << filterNodeHandle.getNamespace() << "/" << filterChainNamespace);
 
     this->outputPublisher = topicNodeHandle.template advertise<T>("output", outputQueueSize);
