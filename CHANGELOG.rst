@@ -2,8 +2,8 @@
 Changelog for package sensor_filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.3 (2021-05-20)
+------------------
 * Fixed data types of nodes.
 * Contributors: Martin Pecka
 
