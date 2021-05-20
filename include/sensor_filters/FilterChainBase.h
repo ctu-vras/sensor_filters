@@ -29,7 +29,13 @@
  */
 
 #include <ros/ros.h>
+
+#if ROS_VERSION_MINIMUM(1, 15, 0)
+#include <filters/filter_chain.hpp>
+#else
 #include <filters/filter_chain.h>
+#endif
+
 
 namespace sensor_filters
 {
