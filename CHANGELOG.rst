@@ -2,6 +2,11 @@
 Changelog for package sensor_filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed data types of nodes.
+* Contributors: Martin Pecka
+
 1.0.2 (2021-05-20)
 ------------------
 * Fix for Noetic.
