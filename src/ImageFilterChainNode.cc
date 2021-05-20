@@ -26,11 +26,11 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/Image.h>
 
 #include <sensor_filters/FilterChainNode.h>
 
 int main(int argc, char** argv)
 {
-  sensor_filters::spinFilterChain<sensor_msgs::PointCloud2>("cloud_filter_chain", argc, argv);
+  sensor_filters::spinFilterChain<sensor_msgs::Image>("image_filter_chain", argc, argv);
 }
