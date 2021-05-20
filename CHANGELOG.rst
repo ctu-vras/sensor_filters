@@ -2,8 +2,8 @@
 Changelog for package sensor_filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.2 (2021-05-20)
+------------------
 * Fix for Noetic.
 * Contributors: Martin Pecka
 
