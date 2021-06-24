@@ -2,6 +2,11 @@
 Changelog for package sensor_filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added ChangeHeader filter
+* Contributors: Martin Pecka
+
 1.0.3 (2021-05-20)
 ------------------
 * Fixed data types of nodes.
