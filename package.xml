@@ -20,5 +20,7 @@
 
   <export>
     <nodelet plugin="${prefix}/nodelets.xml" />
+
+    <filters plugin="${prefix}/ChangeHeaderFilter.xml" />
   </export>
 </package>

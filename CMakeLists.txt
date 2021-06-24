@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(sensor_filters)
 
+set(CMAKE_CXX_STANDARD 17)
+
 find_package(catkin REQUIRED COMPONENTS
   filters
   nodelet
@@ -53,6 +55,25 @@ foreach(type IN LISTS types)
     ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
     LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
     RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+  )
+endforeach()
+
+set(filters
+  ChangeHeaderFilter
+)
+
+foreach(filter IN LISTS filters)
+  add_library(${filter} src/filters/${filter}.cc)
+  add_dependencies(${filter} ${catkin_EXPORTED_TARGETS})
+  target_link_libraries(${filter} ${catkin_LIBRARIES})
+  install(TARGETS ${filter}
+    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+    RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+  )
+  install(FILES
+    ${filter}.xml
+    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   )
 endforeach()
 

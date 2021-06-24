@@ -24,6 +24,22 @@ The namespaces from which the filters load are the following:
 | RelativeHumidity | `~humidity_filter_chain` | `sensor_filters/relativehumidity_filter_chain` |
 | Temperature | `~temperature_filter_chain` | `sensor_filters/temperature_filter_chain` |
 
+## Provided filters
+
+### sensor_filters/ChangeHeader/$MESSAGE_TYPE
+
+This filter allows changing the contents of the header of sensor messages. You can use it for example to correct the `frame_id` of a sensor, or the adjust the timestamp of its messages.
+
+#### Parameters
+
+- `frame_id_prefix` (string): Add this prefix to `header.frame_id`
+- `frame_id_suffix` (string): Add this suffix to `header.frame_id`
+- `frame_id` (string): Replace `header.frame_id`with this value (prefix and suffix are then ignored)
+- `seq` (uint): Replace `header.seq` with this value
+- `seq_relative` (uint): Add this value to `header.seq` (watch out for unsigned int underflow)
+- `stamp` (double): Set `header.stamp` to this value (double value is converted to `ros::Time`)
+- `stamp_relative` (double): Add this value to `header.stamp` (double value is converted to `ros::Duration`)
+
 ## `laser_filters` compatibility
 
 The `LaserScan` filter chain node is compatible with the `scan_to_scan_node` from `laser_filters` package (it can load the same filters using the same config).
