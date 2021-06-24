@@ -2,8 +2,8 @@
 Changelog for package sensor_filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.4 (2021-06-24)
+------------------
 * Added ChangeHeader filter
 * Contributors: Martin Pecka
 
