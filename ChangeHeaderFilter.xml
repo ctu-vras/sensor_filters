@@ -1,56 +1,56 @@
 <class_libraries>
     <library path="lib/libChangeHeaderFilter">
         <class name="sensor_filters/ChangeHeader/CompressedImage"
-               type="sensor_fliters::ChangeHeader<sensor_msgs::CompressedImage>"
+               type="sensor_filters::ChangeHeader<sensor_msgs::CompressedImage>"
                base_class_type="filters::FilterBase<sensor_msgs::CompressedImage>">
             <description>
                 Change the header of a message.
             </description>
         </class>
         <class name="sensor_filters/ChangeHeader/Image"
-               type="sensor_fliters::ChangeHeader<sensor_msgs::Image>"
+               type="sensor_filters::ChangeHeader<sensor_msgs::Image>"
                base_class_type="filters::FilterBase<sensor_msgs::Image>">
             <description>
                 Change the header of a message.
             </description>
         </class>
         <class name="sensor_filters/ChangeHeader/Imu"
-               type="sensor_fliters::ChangeHeader<sensor_msgs::Imu>"
+               type="sensor_filters::ChangeHeader<sensor_msgs::Imu>"
                base_class_type="filters::FilterBase<sensor_msgs::Imu>">
             <description>
                 Change the header of a message.
             </description>
         </class>
         <class name="sensor_filters/ChangeHeader/Joy"
-               type="sensor_fliters::ChangeHeader<sensor_msgs::Joy>"
+               type="sensor_filters::ChangeHeader<sensor_msgs::Joy>"
                base_class_type="filters::FilterBase<sensor_msgs::Joy>">
             <description>
                 Change the header of a message.
             </description>
         </class>
         <class name="sensor_filters/ChangeHeader/LaserScan"
-               type="sensor_fliters::ChangeHeader<sensor_msgs::LaserScan>"
+               type="sensor_filters::ChangeHeader<sensor_msgs::LaserScan>"
                base_class_type="filters::FilterBase<sensor_msgs::LaserScan>">
             <description>
                 Change the header of a message.
             </description>
         </class>
         <class name="sensor_filters/ChangeHeader/MagneticField"
-               type="sensor_fliters::ChangeHeader<sensor_msgs::MagneticField>"
+               type="sensor_filters::ChangeHeader<sensor_msgs::MagneticField>"
                base_class_type="filters::FilterBase<sensor_msgs::MagneticField>">
             <description>
                 Change the header of a message.
             </description>
         </class>
         <class name="sensor_filters/ChangeHeader/NavSatFix"
-               type="sensor_fliters::ChangeHeader<sensor_msgs::NavSatFix>"
+               type="sensor_filters::ChangeHeader<sensor_msgs::NavSatFix>"
                base_class_type="filters::FilterBase<sensor_msgs::NavSatFix>">
             <description>
                 Change the header of a message.
             </description>
         </class>
         <class name="sensor_filters/ChangeHeader/PointCloud"
-               type="sensor_fliters::ChangeHeader<sensor_msgs::PointCloud>"
+               type="sensor_filters::ChangeHeader<sensor_msgs::PointCloud>"
                base_class_type="filters::FilterBase<sensor_msgs::PointCloud>">
             <description>
                 Change the header of a message.
@@ -64,21 +64,21 @@
             </description>
         </class>
         <class name="sensor_filters/ChangeHeader/Range"
-               type="sensor_fliters::ChangeHeader<sensor_msgs::Range>"
+               type="sensor_filters::ChangeHeader<sensor_msgs::Range>"
                base_class_type="filters::FilterBase<sensor_msgs::Range>">
             <description>
                 Change the header of a message.
             </description>
         </class>
         <class name="sensor_filters/ChangeHeader/RelativeHumidity"
-               type="sensor_fliters::ChangeHeader<sensor_msgs::RelativeHumidity>"
+               type="sensor_filters::ChangeHeader<sensor_msgs::RelativeHumidity>"
                base_class_type="filters::FilterBase<sensor_msgs::RelativeHumidity>">
             <description>
                 Change the header of a message.
             </description>
         </class>
         <class name="sensor_filters/ChangeHeader/Temperature"
-               type="sensor_fliters::ChangeHeader<sensor_msgs::Temperature>"
+               type="sensor_filters::ChangeHeader<sensor_msgs::Temperature>"
                base_class_type="filters::FilterBase<sensor_msgs::Temperature>">
             <description>
                 Change the header of a message.
