@@ -2,8 +2,8 @@
 Changelog for package sensor_filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.5 (2021-07-30)
+------------------
 * Fixed typo leading to segfaults when using ChangeHeader filter.
 * Contributors: Martin Pecka
 
