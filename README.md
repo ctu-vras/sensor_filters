@@ -33,7 +33,7 @@ This package also provides a few high-level filters.
 
 ### sensor_filters/ChangeHeader/$MESSAGE_TYPE
 
-This filter allows changing the contents of the header of sensor messages. You can use it for example to correct the `frame_id` of a sensor, or the adjust the timestamp of its messages.
+This filter allows changing the contents of the header of sensor messages. You can use it for example to correct the `frame_id` of a sensor, or adjust the timestamp of its messages.
 
 #### Parameters
 
