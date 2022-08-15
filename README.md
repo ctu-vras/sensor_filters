@@ -5,7 +5,7 @@ See https://wiki.ros.org/filters to read more about the `filters` package.
 
 Attention: The *PCL filters* provided by package [pcl_ros](http://wiki.ros.org/pcl_ros/Tutorials/filters) are not "compatible" with this package. They are instances of *PCL filters*, but written as ROS nodelets, not as *ROS filters* implementing the `filters::FilterBase<>` interface required by this package. Running pcl_ros filter nodelets does not require any additional setup except a running nodelet manager.
 
-Each node/nodelet's task is very simple: load the filter chain, subscribe `~input` topic, and publish the filtered messages to `~output` topic.
+The task of each node(let) in sensor_filters is very simple: load the filter chain, subscribe `~input` topic, and publish the filtered messages to `~output` topic.
 
 The size of message queues is configured via `~input_queue_size` and `~output_queue_size`, both defaulting to 10 messages.
 
