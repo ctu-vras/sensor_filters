@@ -60,6 +60,18 @@ There is, however, one noteworthy exception:
 The `LaserScan` filter chain node is compatible with the `scan_to_scan_node` from `laser_filters` package (it can load the same filters using the same config).
 It does not, however, use TF message filter, so each filter has to wait for the required TFs itself.
 
+## Why ROS filters?
+
+The simple answer is - performance. ROS filters are the most efficient way to run a chain of processors on sensor data. Passing the message from one filter to another is as simple as doing a C++ object copy. There is even a proposal for an [in-place (zero-copy) implementation](https://github.com/ros/filters/pull/38).
+
+You can think about nodelets and their said performance. If used right and you run only non-modifying filters, you might actually get to true zero-copy filtering. But you have a dynamic allocation of at least one shared_ptr in your path, which might be costly and with unpredictable impacts on run time.
+
+If you use nodelets and publish/subscribe references to messages instead of shared_ptrs, passing the message from one nodelet to another in the same manager not only does a copy of the message, but it also undergoes a serialization and deserialization step, which is most probably costly.
+
+If you do not even use nodelets, but plain nodes, passing a message requires serializing it and sending via a local (or, even worse, remote TCP) socket to the other node. So you have copying, (de)serializing and sending via the network stack.
+
+In the future, I plan to add some measurements to give some solid ground to these propositions.
+
 ## Extensibility
 
 Both the nodes and nodelets offer common code that can be shared so that you can build extensions of the simple filter chain handlers provided by this package.
