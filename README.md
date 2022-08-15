@@ -1,6 +1,9 @@
 # sensor\_filters
 
 This package is a collection of nodes and nodelets that service a `filters::FilterChain` for message types from `sensor_msgs` package.
+See https://wiki.ros.org/filters to read more about the `filters` package.
+
+Attention: The *PCL filters* provided by package [pcl_ros](http://wiki.ros.org/pcl_ros/Tutorials/filters) are not "compatible" with this package. They are instances of *PCL filters*, but written as ROS nodelets, not as *ROS filters* implementing the `filters::FilterBase<>` interface required by this package. Running pcl_ros filter nodelets does not require any additional setup except a running nodelet manager.
 
 Each node/nodelet's task is very simple: load the filter chain, subscribe `~input` topic, and publish the filtered messages to `~output` topic.
 
@@ -26,6 +29,8 @@ The namespaces from which the filters load are the following:
 
 ## Provided filters
 
+This package also provides a few high-level filters.
+
 ### sensor_filters/ChangeHeader/$MESSAGE_TYPE
 
 This filter allows changing the contents of the header of sensor messages. You can use it for example to correct the `frame_id` of a sensor, or the adjust the timestamp of its messages.
@@ -40,7 +45,17 @@ This filter allows changing the contents of the header of sensor messages. You c
 - `stamp` (double): Set `header.stamp` to this value (double value is converted to `ros::Time`)
 - `stamp_relative` (double): Add this value to `header.stamp` (double value is converted to `ros::Duration`)
 
-## `laser_filters` compatibility
+## Where to get other filters
+
+If you are looking for other implementations of sensor filters, you will probably be disappointed, as they are really scarce. I don't know why it is the case, because filter chains are the most efficient data processing path ROS offers, yet most people chose to write nodelets instead.
+
+There is, however, one noteworthy exception:
+
+### `robot_body_filter`
+
+[robot_body_filter](http://wiki.ros.org/robot_body_filter) is a versatile tool for removing the body parts of a robot from laser scans and point clouds. No more box approximations of your robots! Represent them exactly as they are!
+
+### `laser_filters` compatibility
 
 The `LaserScan` filter chain node is compatible with the `scan_to_scan_node` from `laser_filters` package (it can load the same filters using the same config).
 It does not, however, use TF message filter, so each filter has to wait for the required TFs itself.
@@ -48,6 +63,8 @@ It does not, however, use TF message filter, so each filter has to wait for the 
 ## Extensibility
 
 Both the nodes and nodelets offer common code that can be shared so that you can build extensions of the simple filter chain handlers provided by this package.
+
+See the [examples folder](examples/) for more verbose examples.
 
 ### Nodes
 
@@ -85,8 +102,9 @@ PLUGINLIB_EXPORT_CLASS(MyNodelet, nodelet::Nodelet)
 `filter.yaml`
 
 ```YAML
-output_queue_size: 1
+output_queue_size: 100
 scan_filter_chain:
+  # Warning: using laser_filters like this might fail if they need to wait for some TFs; intensity filter does not.
   - name: intensity
     type: laser_filters/LaserScanIntensityFilter
     params:
@@ -95,13 +113,11 @@ scan_filter_chain:
       invert: false
       filter_override_range: true
       filter_override_intensity: false
-  - name: shadows
-    type: laser_filters/ScanShadowsFilter
+  # This filter will subtract 25 ms from each scan timestamp, e.g. to account for transport delay.
+  - name: delay
+    type: sensor_filters/ChangeHeader/LaserScan
     params:
-      min_angle: 10
-      max_angle: 170
-      neighbors: 20
-      window: 0
+      stamp_relative: -0.025
 ```
 
 `filter.launch`

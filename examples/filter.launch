@@ -1,0 +1,14 @@
+<!--
+ An example launch file for running a filter on LaserScan messages that does intensity filtering and adjusts scan
+ timestamps.
+ Author: Martin Pecka
+ SPDX-License-Identifier: Unlicense
+ SPDX-FileCopyrightText: Czech Technical University in Prague
+-->
+<launch>
+    <node pkg="sensor_filters" type="laserscan_filter_chain" output="screen" name="laser_filter">
+        <remap from="~input" to="base_scan" />
+        <remap from="~output" to="base_scan_filtered" />
+        <rosparam command="load" file="$(dirname)/filter.yaml" />
+    </node>
+</launch>

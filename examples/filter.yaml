@@ -1,0 +1,22 @@
+# An example config file for running a filter on LaserScan messages that does intensity filtering and adjusts scan
+# timestamps.
+# Author: Martin Pecka
+# SPDX-License-Identifier: Unlicense
+# SPDX-FileCopyrightText: Czech Technical University in Prague
+
+output_queue_size: 100
+scan_filter_chain:
+  # Warning: using laser_filters like this might fail if they need to wait for some TFs; intensity filter does not.
+  - name: intensity
+    type: laser_filters/LaserScanIntensityFilter
+    params:
+      lower_threshold: 8000
+      upper_threshold: 100000
+      invert: false
+      filter_override_range: true
+      filter_override_intensity: false
+  # This filter will subtract 25 ms from each scan timestamp, e.g. to account for transport delay.
+  - name: delay
+    type: sensor_filters/ChangeHeader/LaserScan
+    params:
+      stamp_relative: -0.025
