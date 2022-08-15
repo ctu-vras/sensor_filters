@@ -64,7 +64,7 @@ It does not, however, use TF message filter, so each filter has to wait for the 
 
 Both the nodes and nodelets offer common code that can be shared so that you can build extensions of the simple filter chain handlers provided by this package.
 
-See the [examples folder](examples/) for more verbose examples.
+See the [examples folder](https://github.com/ctu-vras/sensor_filters/blob/master/examples) for more verbose examples.
 
 ### Nodes
 
