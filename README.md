@@ -53,7 +53,7 @@ There is, however, one noteworthy exception:
 
 ### `robot_body_filter`
 
-[robot_body_filter](http://wiki.ros.org/robot_body_filter) is a versatile tool for removing the body parts of a robot from laser scans and point clouds. No more box approximations of your robots! Represent them exactly as they are!
+[robot_body_filter](http://wiki.ros.org/robot_body_filter) is a versatile tool for removing the body parts of a robot from laser scans and point clouds exactly according to the robot's URDF model. No more box approximations of your robots! Represent them exactly as they are!
 
 ### `laser_filters` compatibility
 
