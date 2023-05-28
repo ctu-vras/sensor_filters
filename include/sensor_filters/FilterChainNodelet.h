@@ -38,14 +38,14 @@
 namespace sensor_filters
 {
 
-template <typename T>
-class FilterChainNodelet : public nodelet::Nodelet, public FilterChainBase<T>
+template <typename T, typename Base = sensor_filters::FilterChainBase<T>>
+class FilterChainNodelet : public nodelet::Nodelet, public Base
 {
   protected: std::string filterChainNamespace;
 
   public: explicit FilterChainNodelet(std::string filterChainNamespace) :
     nodelet::Nodelet(),
-    FilterChainBase<T>(),
+    Base(),
     filterChainNamespace(std::move(filterChainNamespace))
   {
   }
@@ -64,12 +64,15 @@ class FilterChainNodelet : public nodelet::Nodelet, public FilterChainBase<T>
 
 }
 
-#define DECLARE_SENSOR_FILTER(TYPE, CONFIG) \
+#define DECLARE_SENSOR_FILTER_BASE(TYPE, BASE, CONFIG) \
 namespace sensor_filters \
 { \
-class TYPE ## FilterChainNodelet : public FilterChainNodelet<sensor_msgs::TYPE> \
+class TYPE ## FilterChainNodelet : public FilterChainNodelet<sensor_msgs::TYPE, BASE> \
 { \
   public: TYPE ## FilterChainNodelet() : FilterChainNodelet(CONFIG "_filter_chain") {} \
 }; \
 }\
 PLUGINLIB_EXPORT_CLASS(sensor_filters::TYPE ## FilterChainNodelet, nodelet::Nodelet)
+
+#define DECLARE_SENSOR_FILTER(TYPE, CONFIG) \
+DECLARE_SENSOR_FILTER_BASE(TYPE, sensor_filters::FilterChainBase<sensor_msgs::TYPE>, CONFIG)

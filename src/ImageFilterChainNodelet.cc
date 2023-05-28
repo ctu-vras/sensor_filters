@@ -30,5 +30,6 @@
 #include <sensor_msgs/Image.h>
 
 #include <sensor_filters/FilterChainNodelet.h>
+#include <sensor_filters/ImageFilterChainBase.h>
 
-DECLARE_SENSOR_FILTER(Image, "image")  // NOLINT(cert-err58-cpp)
+DECLARE_SENSOR_FILTER_BASE(Image, ImageFilterChainBase, "image")  // NOLINT(cert-err58-cpp)

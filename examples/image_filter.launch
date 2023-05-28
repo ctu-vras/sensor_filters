@@ -1,0 +1,14 @@
+<!--
+ An example launch file for running a filter on Image messages. This example showcases that the filter chain uses
+ image_transport to subscribe and publish.
+ Author: Martin Pecka
+ SPDX-License-Identifier: Unlicense
+ SPDX-FileCopyrightText: Czech Technical University in Prague
+-->
+<launch>
+    <node pkg="sensor_filters" type="image_filter_chain" output="screen" name="image_filter">
+        <remap from="~input" to="image" />
+        <remap from="~output" to="image_filtered" />
+        <rosparam command="load" file="$(dirname)/image_filter.yaml" />
+    </node>
+</launch>

@@ -60,6 +60,10 @@ There is, however, one noteworthy exception:
 The `LaserScan` filter chain node is compatible with the `scan_to_scan_node` from `laser_filters` package (it can load the same filters using the same config).
 It does not, however, use TF message filter, so each filter has to wait for the required TFs itself.
 
+## Transport
+
+Filters of type `Image` and `PointCloud2` will automatically use the image_transport/point_cloud_transport to publish and subscribe to topics.
+
 ## Why ROS filters?
 
 The simple answer is - performance. ROS filters are the most efficient way to run a chain of processors on sensor data. Passing the message from one filter to another is as simple as doing a C++ object copy. There is even a proposal for an [in-place (zero-copy) implementation](https://github.com/ros/filters/pull/38).
@@ -99,6 +103,8 @@ class MyClass : public sensor_filters::FilterChainNode<sensor_msgs::PointCloud2>
 
 class MyNodelet : public sensor_filters::FilterChainNodelet<sensor_msgs::PointCloud2>
 {
+  public: MyNodelet() : sensor_filters::FilterChainNodelet<sensor_msgs::PointCloud2>("my_filter_chain") {}
+
   protected: void onInit() override
   {
     sensor_filters::FilterChainNodelet<sensor_msgs::PointCloud2>::onInit();

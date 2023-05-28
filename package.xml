@@ -18,6 +18,12 @@
   <depend>roscpp</depend>
   <depend>sensor_msgs</depend>
 
+  <build_depend>image_transport</build_depend>
+  <build_depend>point_cloud_transport</build_depend>
+
+  <exec_depend>image_transport</exec_depend>
+  <exec_depend>point_cloud_transport</exec_depend>
+
   <export>
     <nodelet plugin="${prefix}/nodelets.xml" />
 

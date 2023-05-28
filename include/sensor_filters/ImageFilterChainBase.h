@@ -26,10 +26,35 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#include <pluginlib/class_list_macros.h>
-#include <sensor_msgs/PointCloud2.h>
+#include <memory>
 
-#include <sensor_filters/FilterChainNodelet.h>
-#include <sensor_filters/PointCloud2FilterChainBase.h>
+#include <image_transport/image_transport.h>
+#include <image_transport/publisher.h>
+#include <image_transport/subscriber.h>
+#include <sensor_msgs/Image.h>
 
-DECLARE_SENSOR_FILTER_BASE(PointCloud2, PointCloud2FilterChainBase, "cloud")  // NOLINT(cert-err58-cpp)
+#include <sensor_filters/FilterChainBase.h>
+
+namespace sensor_filters
+{
+class ImageFilterChainBase : public FilterChainBase<sensor_msgs::Image>
+{
+  public: ImageFilterChainBase() : FilterChainBase<sensor_msgs::Image>() {}
+
+protected:
+    std::unique_ptr<image_transport::ImageTransport> it;
+    image_transport::Publisher itPublisher;
+    image_transport::Subscriber itSubscriber;
+
+    void initFilters(const std::string &filterChainNamespace, ros::NodeHandle filterNodeHandle,
+                     ros::NodeHandle topicNodeHandle, const bool useSharedPtrMessages, const size_t inputQueueSize,
+                     const size_t outputQueueSize) override;
+
+    void advertise() override;
+
+    void subscribe() override;
+
+    void publishShared(const sensor_msgs::ImageConstPtr& msg) override;
+};
+
+}

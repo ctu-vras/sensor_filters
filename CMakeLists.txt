@@ -5,7 +5,9 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(catkin REQUIRED COMPONENTS
   filters
+  image_transport
   nodelet
+  point_cloud_transport
   roscpp
   sensor_msgs
 )
@@ -57,6 +59,12 @@ foreach(type IN LISTS types)
     RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
   )
 endforeach()
+
+# Additional sources for the targets that use custom transport
+target_sources(image_filter_chain_nodelet PRIVATE src/ImageFilterChainBase.cc)
+target_sources(image_filter_chain PRIVATE src/ImageFilterChainBase.cc)
+target_sources(pointcloud2_filter_chain_nodelet PRIVATE src/PointCloud2FilterChainBase.cc)
+target_sources(pointcloud2_filter_chain PRIVATE src/PointCloud2FilterChainBase.cc)
 
 set(filters
   ChangeHeaderFilter

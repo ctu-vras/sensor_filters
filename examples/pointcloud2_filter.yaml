@@ -1,0 +1,14 @@
+# An example launch file for running a filter on PointCloud2 messages. This example showcases that the filter chain uses
+# point_cloud_transport to subscribe and publish.
+# Author: Martin Pecka
+# SPDX-License-Identifier: Unlicense
+# SPDX-FileCopyrightText: Czech Technical University in Prague
+
+point_cloud_transport: draco
+output_queue_size: 10
+cloud_filter_chain:
+  # This filter will subtract 25 ms from each cloud timestamp, e.g. to account for transport delay.
+  - name: delay
+    type: sensor_filters/ChangeHeader/PointCloud2
+    params:
+      stamp_relative: -0.025

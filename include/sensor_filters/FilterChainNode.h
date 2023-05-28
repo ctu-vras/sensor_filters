@@ -35,12 +35,12 @@
 namespace sensor_filters
 {
 
-template <typename T>
-class FilterChainNode : public FilterChainBase<T>
+template <typename T, typename Base = sensor_filters::FilterChainBase<T>>
+class FilterChainNode : public Base
 {
   public: explicit FilterChainNode(const std::string& filterChainNamespace, ros::NodeHandle filterNodeHandle,
       ros::NodeHandle topicNodeHandle) :
-    FilterChainBase<T>()
+    Base()
   {
     this->initFilters(
       filterChainNamespace, filterNodeHandle, topicNodeHandle, false,
@@ -51,12 +51,12 @@ class FilterChainNode : public FilterChainBase<T>
 };
 
 
-template <typename T>
+template <typename T, typename Base = sensor_filters::FilterChainBase<T>>
 void spinFilterChain(const std::string& filterChainNamespace, int argc, char** argv)
 {
   ros::init(argc, argv, "filter_chain");
   ros::NodeHandle nh("~");
-  const FilterChainNode<T> node(filterChainNamespace, nh, nh);
+  const FilterChainNode<T, Base> node(filterChainNamespace, nh, nh);
   ros::spin();
 }
 

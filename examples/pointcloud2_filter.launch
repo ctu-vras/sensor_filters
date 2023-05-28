@@ -1,0 +1,14 @@
+<!--
+ An example launch file for running a filter on PointCloud2 messages. This example showcases that the filter chain uses
+ point_cloud_transport to subscribe and publish.
+ Author: Martin Pecka
+ SPDX-License-Identifier: Unlicense
+ SPDX-FileCopyrightText: Czech Technical University in Prague
+-->
+<launch>
+    <node pkg="sensor_filters" type="pointcloud2_filter_chain" output="screen" name="cloud_filter">
+        <remap from="~input" to="cloud" />
+        <remap from="~output" to="cloud_filtered" />
+        <rosparam command="load" file="$(dirname)/pointcloud2_filter.yaml" />
+    </node>
+</launch>

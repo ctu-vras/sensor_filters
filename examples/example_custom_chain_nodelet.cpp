@@ -12,6 +12,8 @@
 
 class MyNodelet : public sensor_filters::FilterChainNodelet<sensor_msgs::PointCloud2>
 {
+  public: MyNodelet() : sensor_filters::FilterChainNodelet<sensor_msgs::PointCloud2>("my_filter_chain") {}
+
   protected: void onInit() override
   {
     sensor_filters::FilterChainNodelet<sensor_msgs::PointCloud2>::onInit();

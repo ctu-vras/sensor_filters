@@ -45,6 +45,10 @@ class FilterChainBase
 {
   protected: ros::Subscriber inputSubscriber;
   protected: ros::Publisher outputPublisher;
+  protected: ros::NodeHandle topicNodeHandle;
+  protected: size_t inputQueueSize {10u};
+  protected: size_t outputQueueSize {10u};
+  protected: bool useSharedPtrMessages {true};
 
   protected: filters::FilterChain<T> filterChain;
   protected: T msg;
@@ -72,24 +76,51 @@ class FilterChainBase
     ROS_INFO_STREAM("Configured filter chain of type " << DataType::value() <<
       " from namespace " << filterNodeHandle.getNamespace() << "/" << filterChainNamespace);
 
-    this->outputPublisher = topicNodeHandle.template advertise<T>("output", outputQueueSize);
-    if (useSharedPtrMessages)
-      this->inputSubscriber = topicNodeHandle.subscribe("input", inputQueueSize, &FilterChainBase::callbackShared, this);
+    this->topicNodeHandle = topicNodeHandle;
+    this->outputQueueSize = outputQueueSize;
+    this->inputQueueSize = inputQueueSize;
+    this->useSharedPtrMessages = useSharedPtrMessages;
+    
+    this->advertise();
+    this->subscribe();
+  }
+
+  protected: virtual void advertise()
+  {
+    this->outputPublisher = this->topicNodeHandle.template advertise<T>("output", this->outputQueueSize);
+  }
+
+  protected: virtual void subscribe()
+  {
+    if (this->useSharedPtrMessages)
+      this->inputSubscriber = this->topicNodeHandle.subscribe(
+        "input", this->inputQueueSize, &FilterChainBase::callbackShared, this);
     else
-      this->inputSubscriber = topicNodeHandle.subscribe("input", inputQueueSize, &FilterChainBase::callbackReference, this);
+      this->inputSubscriber = this->topicNodeHandle.subscribe(
+        "input", this->inputQueueSize, &FilterChainBase::callbackReference, this);
+  }
+
+  protected: virtual void publishShared(const typename T::ConstPtr& msg)
+  {
+      this->outputPublisher.publish(msg);
+  }
+
+  protected: virtual void publishReference(const T& msg)
+  {
+      this->outputPublisher.publish(msg);
   }
 
   protected: virtual void callbackShared(const typename T::ConstPtr& msgIn)
   {
     typename T::Ptr msgOut(new T);
     if (this->filter(*msgIn, *msgOut))
-      this->outputPublisher.publish(msgOut);
+      this->publishShared(msgOut);
   }
 
   protected: virtual void callbackReference(const T& msgIn)
   {
     if (this->filter(msgIn, this->msg))
-      this->outputPublisher.publish(this->msg);
+      this->publishReference(this->msg);
   }
 
   protected: virtual bool filter(const T& msgIn, T& msgOut)
