@@ -2,8 +2,8 @@
 Changelog for package sensor_filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.0 (2023-05-29)
+------------------
 * Using image_transport and point_cloud_transport where applicable.
 * Noetic compatibility.
 * Improved README and added example files.
