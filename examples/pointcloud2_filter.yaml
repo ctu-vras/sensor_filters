@@ -1,8 +1,8 @@
-# An example launch file for running a filter on PointCloud2 messages. This example showcases that the filter chain uses
-# point_cloud_transport to subscribe and publish.
-# Author: Martin Pecka
 # SPDX-License-Identifier: Unlicense
 # SPDX-FileCopyrightText: Czech Technical University in Prague
+
+# An example launch file for running a filter on PointCloud2 messages. This example showcases that the filter chain uses
+# point_cloud_transport to subscribe and publish.
 
 point_cloud_transport: draco
 output_queue_size: 10

@@ -1,3 +1,8 @@
+<!--
+SPDX-License-Identifier: BSD-3-Clause
+SPDX-FileCopyrightText: Czech Technical University in Prague
+-->
+
 # sensor\_filters
 
 This package is a collection of nodes and nodelets that service a `filters::FilterChain` for message types from `sensor_msgs` package.

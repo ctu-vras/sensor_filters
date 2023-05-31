@@ -1,10 +1,11 @@
 <!--
- An example launch file for running a filter on PointCloud2 messages. This example showcases that the filter chain uses
- point_cloud_transport to subscribe and publish.
- Author: Martin Pecka
- SPDX-License-Identifier: Unlicense
- SPDX-FileCopyrightText: Czech Technical University in Prague
+SPDX-License-Identifier: Unlicense
+SPDX-FileCopyrightText: Czech Technical University in Prague
+
+An example launch file for running a filter on PointCloud2 messages. This example showcases that the filter chain uses
+point_cloud_transport to subscribe and publish.
 -->
+
 <launch>
     <node pkg="sensor_filters" type="pointcloud2_filter_chain" output="screen" name="cloud_filter">
         <remap from="~input" to="cloud" />

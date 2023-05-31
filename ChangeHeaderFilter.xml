@@ -1,3 +1,7 @@
+<!--
+SPDX-License-Identifier: BSD-3-Clause
+SPDX-FileCopyrightText: Czech Technical University in Prague
+-->
 <class_libraries>
     <library path="lib/libChangeHeaderFilter">
         <class name="sensor_filters/ChangeHeader/CompressedImage"

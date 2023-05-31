@@ -1,8 +1,8 @@
-# An example config file for running a filter on LaserScan messages that does intensity filtering and adjusts scan
-# timestamps.
-# Author: Martin Pecka
 # SPDX-License-Identifier: Unlicense
 # SPDX-FileCopyrightText: Czech Technical University in Prague
+
+# An example config file for running a filter on LaserScan messages that does intensity filtering and adjusts scan
+# timestamps.
 
 output_queue_size: 100
 scan_filter_chain:

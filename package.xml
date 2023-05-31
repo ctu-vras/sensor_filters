@@ -1,3 +1,7 @@
+<!--
+SPDX-License-Identifier: BSD-3-Clause
+SPDX-FileCopyrightText: Czech Technical University in Prague
+-->
 <?xml version="1.0"?>
 <package format="2">
   <name>sensor_filters</name>

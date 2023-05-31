@@ -1,3 +1,7 @@
+<!--
+SPDX-License-Identifier: BSD-3-Clause
+SPDX-FileCopyrightText: Czech Technical University in Prague
+-->
 <library path="lib/libcompressed_image_filter_chain_nodelet">
   <class name="sensor_filters/compressed_image_filter_chain" type="sensor_filters::CompressedImageFilterChainNodelet" base_class_type="nodelet::Nodelet">
     <description>

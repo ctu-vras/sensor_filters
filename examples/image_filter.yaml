@@ -1,8 +1,9 @@
+# SPDX-License-Identifier: Unlicense
+# SPDX-FileCopyrightText: Czech Technical University in Prague
+
 # An example launch file for running a filter on Image messages. This example showcases that the filter chain uses
 # image_transport to subscribe and publish.
 # Author: Martin Pecka
-# SPDX-License-Identifier: Unlicense
-# SPDX-FileCopyrightText: Czech Technical University in Prague
 
 image_transport: compressed
 output_queue_size: 100

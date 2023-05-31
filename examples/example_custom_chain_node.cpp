@@ -1,9 +1,9 @@
+// SPDX-License-Identifier: Unlicense
+// SPDX-FileCopyrightText: Czech Technical University in Prague
+
 /**
  * \file
  * \brief An example how you can write a custom node that runs the sensor filter chain and does some other tasks.
- * \author Martin Pecka
- * SPDX-License-Identifier: Unlicense
- * SPDX-FileCopyrightText: Czech Technical University in Prague
  */
 
 #include <sensor_msgs/PointCloud2.h>

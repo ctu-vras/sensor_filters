@@ -1,10 +1,11 @@
 <!--
- An example launch file for running a filter on LaserScan messages that does intensity filtering and adjusts scan
- timestamps.
- Author: Martin Pecka
- SPDX-License-Identifier: Unlicense
- SPDX-FileCopyrightText: Czech Technical University in Prague
+SPDX-License-Identifier: Unlicense
+SPDX-FileCopyrightText: Czech Technical University in Prague
+
+An example launch file for running a filter on LaserScan messages that does intensity filtering and adjusts scan
+timestamps.
 -->
+
 <launch>
     <node pkg="sensor_filters" type="laserscan_filter_chain" output="screen" name="laser_filter">
         <remap from="~input" to="base_scan" />

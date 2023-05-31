@@ -1,3 +1,11 @@
+// SPDX-License-Identifier: BSD-3-Clause
+// SPDX-FileCopyrightText: Czech Technical University in Prague
+
+/**
+ * \file
+ * \brief A macro that registers a generic filter with all sensor message types.
+ */
+
 #pragma once
 
 #include <sensor_msgs/CompressedImage.h>

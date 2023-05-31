@@ -1,9 +1,9 @@
+// SPDX-License-Identifier: Unlicense
+// SPDX-FileCopyrightText: Czech Technical University in Prague
+
 /**
  * \file
  * \brief An example how you can write a custom nodelet that runs the sensor filter chain and does some other tasks.
- * \author Martin Pecka
- * SPDX-License-Identifier: Unlicense
- * SPDX-FileCopyrightText: Czech Technical University in Prague
  */
 
 #include <pluginlib/class_list_macros.h>
