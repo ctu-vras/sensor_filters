@@ -1,9 +1,9 @@
+<?xml version="1.0"?>
 <!--
 SPDX-License-Identifier: BSD-3-Clause
 SPDX-FileCopyrightText: Czech Technical University in Prague
 -->
-<?xml version="1.0"?>
-<package format="2">
+<package format="3">
   <name>sensor_filters</name>
   <version>1.1.0</version>
   <description>Simple sensor filter chain nodes and nodelets</description>
