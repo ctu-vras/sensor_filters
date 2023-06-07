@@ -2,8 +2,8 @@
 Changelog for package sensor_filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.1 (2023-06-07)
+------------------
 * Reformatted, added catkin lint.
 * Simplified the license statements.
 * Contributors: Martin Pecka
