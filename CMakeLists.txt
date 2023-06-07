@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
 )
 
+#catkin_lint: ignore missing_export_lib
 catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS filters nodelet roscpp sensor_msgs

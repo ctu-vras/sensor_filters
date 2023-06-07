@@ -12,7 +12,7 @@
 class MyClass : public sensor_filters::FilterChainNode<sensor_msgs::PointCloud2>
 {
 public:
-  MyClass(ros::NodeHandle nh) :
+  explicit MyClass(ros::NodeHandle nh) :
     sensor_filters::FilterChainNode<sensor_msgs::PointCloud2>("my_filter_chain", nh, nh)
   {
     // Constructor of your class
