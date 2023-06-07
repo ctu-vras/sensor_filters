@@ -12,15 +12,17 @@
 
 class MyNodelet : public sensor_filters::FilterChainNodelet<sensor_msgs::PointCloud2>
 {
-  public: MyNodelet() : sensor_filters::FilterChainNodelet<sensor_msgs::PointCloud2>("my_filter_chain") {}
+public:
+  MyNodelet() : sensor_filters::FilterChainNodelet<sensor_msgs::PointCloud2>("my_filter_chain") {}
 
-  protected: void onInit() override
+protected:
+  void onInit() override
   {
     sensor_filters::FilterChainNodelet<sensor_msgs::PointCloud2>::onInit();
     // custom nodelet code
   }
 
-  protected: bool filter(const sensor_msgs::PointCloud2& msgIn, sensor_msgs::PointCloud2& msgOut) override
+  bool filter(const sensor_msgs::PointCloud2& msgIn, sensor_msgs::PointCloud2& msgOut) override
   {
     // your custom logic that is run before filtering each message
     return sensor_filters::FilterChainNodelet<sensor_msgs::PointCloud2>::filter(msgIn, msgOut);

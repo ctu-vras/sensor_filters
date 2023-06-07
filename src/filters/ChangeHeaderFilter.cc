@@ -21,8 +21,8 @@ namespace sensor_filters
 template<typename T>
 class ChangeHeader : public filters::FilterBase<T>
 {
-
-  protected: bool configure() override
+protected:
+  bool configure() override
   {
     {
       std::string frameIdParam;
@@ -57,7 +57,8 @@ class ChangeHeader : public filters::FilterBase<T>
     return true;
   }
 
-  public: bool update(const T& data_in, T& data_out) override
+public:
+  bool update(const T& data_in, T& data_out) override
   {
     data_out = data_in;
 
@@ -85,16 +86,16 @@ class ChangeHeader : public filters::FilterBase<T>
     return true;
   }
 
-  private: std::optional<std::string> newFrameId;
-  private: std::optional<std::string> newFrameIdPrefix;
-  private: std::optional<std::string> newFrameIdSuffix;
+private:
+  std::optional<std::string> newFrameId;
+  std::optional<std::string> newFrameIdPrefix;
+  std::optional<std::string> newFrameIdSuffix;
 
-  private: std::optional<uint32_t> newSeqAbs;
-  private: std::optional<uint32_t> newSeqRel;
+  std::optional<uint32_t> newSeqAbs;
+  std::optional<uint32_t> newSeqRel;
 
-  private: std::optional<ros::Time> newStampAbs;
-  private: std::optional<ros::Duration> newStampRel;
-
+  std::optional<ros::Time> newStampAbs;
+  std::optional<ros::Duration> newStampRel;
 };
 
 }

@@ -18,27 +18,27 @@
 namespace sensor_filters
 {
 
-template <typename T, typename Base = sensor_filters::FilterChainBase<T>>
+template<typename T, typename Base = sensor_filters::FilterChainBase<T>>
 class FilterChainNodelet : public nodelet::Nodelet, public Base
 {
-  protected: std::string filterChainNamespace;
+protected:
+  std::string filterChainNamespace;
 
-  public: explicit FilterChainNodelet(std::string filterChainNamespace) :
-    nodelet::Nodelet(),
-    Base(),
-    filterChainNamespace(std::move(filterChainNamespace))
+public:
+  explicit FilterChainNodelet(std::string filterChainNamespace) :
+      nodelet::Nodelet(), Base(), filterChainNamespace(std::move(filterChainNamespace))
   {
   }
 
   ~FilterChainNodelet() override = default;
 
-  protected: void onInit() override
+protected:
+  void onInit() override
   {
     this->initFilters(
-      this->filterChainNamespace, this->getPrivateNodeHandle(), this->getPrivateNodeHandle(), true,
-      this->getPrivateNodeHandle().param("input_queue_size", 10),
-      this->getPrivateNodeHandle().param("output_queue_size", 10)
-    );
+        this->filterChainNamespace, this->getPrivateNodeHandle(), this->getPrivateNodeHandle(), true,
+        this->getPrivateNodeHandle().param("input_queue_size", 10),
+        this->getPrivateNodeHandle().param("output_queue_size", 10));
   }
 };
 

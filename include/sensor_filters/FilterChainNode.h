@@ -18,15 +18,14 @@ namespace sensor_filters
 template <typename T, typename Base = sensor_filters::FilterChainBase<T>>
 class FilterChainNode : public Base
 {
-  public: explicit FilterChainNode(const std::string& filterChainNamespace, ros::NodeHandle filterNodeHandle,
-      ros::NodeHandle topicNodeHandle) :
-    Base()
+public:
+  explicit FilterChainNode(const std::string& filterChainNamespace, ros::NodeHandle filterNodeHandle,
+    ros::NodeHandle topicNodeHandle) : Base()
   {
     this->initFilters(
       filterChainNamespace, filterNodeHandle, topicNodeHandle, false,
       filterNodeHandle.param("input_queue_size", 10),
-      filterNodeHandle.param("output_queue_size", 10)
-    );
+      filterNodeHandle.param("output_queue_size", 10));
   }
 };
 

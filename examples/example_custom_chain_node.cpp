@@ -11,13 +11,15 @@
 
 class MyClass : public sensor_filters::FilterChainNode<sensor_msgs::PointCloud2>
 {
-  public: MyClass(ros::NodeHandle nh) :
+public:
+  MyClass(ros::NodeHandle nh) :
     sensor_filters::FilterChainNode<sensor_msgs::PointCloud2>("my_filter_chain", nh, nh)
   {
     // Constructor of your class
   }
-  
-  protected: bool filter(const sensor_msgs::PointCloud2& msgIn, sensor_msgs::PointCloud2& msgOut) override
+
+protected:
+  bool filter(const sensor_msgs::PointCloud2& msgIn, sensor_msgs::PointCloud2& msgOut) override
   {
     // your custom logic that is run before filtering each message
     return sensor_filters::FilterChainNode<sensor_msgs::PointCloud2>::filter(msgIn, msgOut);

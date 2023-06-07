@@ -9,6 +9,7 @@
  */
 
 #include <memory>
+#include <string>
 
 #include <image_transport/image_transport.h>
 #include <image_transport/publisher.h>
@@ -21,22 +22,25 @@ namespace sensor_filters
 {
 class ImageFilterChainBase : public FilterChainBase<sensor_msgs::Image>
 {
-  public: ImageFilterChainBase() : FilterChainBase<sensor_msgs::Image>() {}
+public:
+  ImageFilterChainBase() : FilterChainBase<sensor_msgs::Image>()
+  {
+  }
 
 protected:
-    std::unique_ptr<image_transport::ImageTransport> it;
-    image_transport::Publisher itPublisher;
-    image_transport::Subscriber itSubscriber;
+  std::unique_ptr<image_transport::ImageTransport> it;
+  image_transport::Publisher itPublisher;
+  image_transport::Subscriber itSubscriber;
 
-    void initFilters(const std::string &filterChainNamespace, ros::NodeHandle filterNodeHandle,
-                     ros::NodeHandle topicNodeHandle, const bool useSharedPtrMessages, const size_t inputQueueSize,
-                     const size_t outputQueueSize) override;
+  void initFilters(const std::string& filterChainNamespace, ros::NodeHandle filterNodeHandle,
+                   ros::NodeHandle topicNodeHandle, bool useSharedPtrMessages, size_t inputQueueSize,
+                   size_t outputQueueSize) override;
 
-    void advertise() override;
+  void advertise() override;
 
-    void subscribe() override;
+  void subscribe() override;
 
-    void publishShared(const sensor_msgs::ImageConstPtr& msg) override;
+  void publishShared(const sensor_msgs::ImageConstPtr& msg) override;
 };
 
 }
