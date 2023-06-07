@@ -14,7 +14,7 @@
 namespace sensor_filters
 {
 
-void ImageFilterChainBase::initFilters(const std::string &filterChainNamespace, ros::NodeHandle filterNodeHandle,
+void ImageFilterChainBase::initFilters(const std::string& filterChainNamespace, ros::NodeHandle filterNodeHandle,
                                        ros::NodeHandle topicNodeHandle, const bool useSharedPtrMessages,
                                        const size_t inputQueueSize, const size_t outputQueueSize)
 {
@@ -23,18 +23,21 @@ void ImageFilterChainBase::initFilters(const std::string &filterChainNamespace, 
                                inputQueueSize, outputQueueSize);
 }
 
-void ImageFilterChainBase::advertise() {
+void ImageFilterChainBase::advertise()
+{
   const auto resolvedOutput = this->topicNodeHandle.resolveName("output");
   this->itPublisher = this->it->advertise(resolvedOutput, this->outputQueueSize);
 }
 
-void ImageFilterChainBase::subscribe() {
+void ImageFilterChainBase::subscribe()
+{
   const auto resolvedInput = this->topicNodeHandle.resolveName("input");
   this->itSubscriber = this->it->subscribe<ImageFilterChainBase>(
       resolvedInput, this->inputQueueSize, &ImageFilterChainBase::callbackShared, this);
 }
 
-void ImageFilterChainBase::publishShared(const sensor_msgs::ImageConstPtr &msg) {
+void ImageFilterChainBase::publishShared(const sensor_msgs::ImageConstPtr& msg)
+{
   this->itPublisher.publish(msg);
 }
 
