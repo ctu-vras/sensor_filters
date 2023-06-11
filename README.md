@@ -8,7 +8,7 @@ SPDX-FileCopyrightText: Czech Technical University in Prague
 This package is a collection of nodes and nodelets that service a `filters::FilterChain` for message types from `sensor_msgs` package.
 See https://wiki.ros.org/filters to read more about the `filters` package.
 
-Attention: The *PCL filters* provided by package [pcl_ros](http://wiki.ros.org/pcl_ros/Tutorials/filters) are not "compatible" with this package. They are instances of *PCL filters*, but written as ROS nodelets, not as *ROS filters* implementing the `filters::FilterBase<>` interface required by this package. Running pcl_ros filter nodelets does not require any additional setup except a running nodelet manager.
+Attention: The *PCL filters* provided by package [pcl_ros](http://wiki.ros.org/pcl_ros/Tutorials/filters) are not "compatible" with this package. They are instances of *PCL filters*, but written as ROS nodelets, not as *ROS filters* implementing the `filters::FilterBase<>` interface required by this package. Running pcl_ros filter nodelets does not require any additional setup except a running nodelet manager. Package [point_cloud2_filters](https://github.com/torydebra/point_cloud2_filters) contains reimplementation of some of these pcl_ros *PCL filters* as *ROS filters*.
 
 The task of each node(let) in sensor_filters is very simple: load the filter chain, subscribe `~input` topic, and publish the filtered messages to `~output` topic.
 
@@ -59,6 +59,10 @@ There is, however, one noteworthy exception:
 ### `robot_body_filter`
 
 [robot_body_filter](http://wiki.ros.org/robot_body_filter) is a versatile tool for removing the body parts of a robot from laser scans and point clouds exactly according to the robot's URDF model. No more box approximations of your robots! Represent them exactly as they are!
+
+### `point_cloud2_filters`
+
+[point_cloud2_filters](https://github.com/torydebra/point_cloud2_filters) provides an implementation similar to `pcl::PassThrough` or `pcl::CropBox` to cut `PointCloud2` messages.
 
 ### `laser_filters` compatibility
 
