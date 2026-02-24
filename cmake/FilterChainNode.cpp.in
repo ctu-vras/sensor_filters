@@ -5,6 +5,14 @@
 @BASE_INCLUDE@
 #include <@MESSAGE_HEADER@>
 
-int main(const int argc, char** argv) {
-    sensor_filters::spinFilterChain<@TEMPLATE_ARGS@>("@NODE_NAME@", argc, argv);
+namespace sensor_filters {
+    class @CLASS_NAME@ : public FilterChainNode<@TEMPLATE_ARGS@> {
+    public:
+        @CLASS_NAME@(const rclcpp::NodeOptions& options) : FilterChainNode("@NODE_NAME@", options) {}
+
+        explicit @CLASS_NAME@(): FilterChainNode("@NODE_NAME@") {}
+    };
 }
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(sensor_filters::@CLASS_NAME@)

@@ -12,13 +12,15 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Wall -Wextra -Wpedantic)
 endif ()
 
-set(DEPENDENCIES robot_body_filter_msgs
-        backward_ros
+set(DEPENDENCIES
+        robot_body_filter_msgs
+        rclcpp
+        rclcpp_components
         filters
+        sensor_msgs
         image_transport
         point_cloud_transport
-        rclcpp
-        sensor_msgs
+        backward_ros
 )
 
 find_package(ament_cmake REQUIRED)
@@ -29,12 +31,14 @@ endforeach ()
 
 include_directories(include include/${PROJECT_NAME})
 
-function(add_filter_chain_node TARGET_NAME FILENAME)
+function(add_filter_chain_node TARGET_NAME CLASS_NAME FILENAME)
     list(APPEND NODE_TARGETS ${TARGET_NAME})
 
-    add_executable(${TARGET_NAME} "${FILENAME}")
+    add_library("${TARGET_NAME}_component" SHARED "${FILENAME}")
+    rclcpp_components_register_node(${TARGET_NAME}_component PLUGIN "sensor_filters::${CLASS_NAME}" EXECUTABLE ${TARGET_NAME})
+    #add_executable(${TARGET_NAME} "${FILENAME}")
     #target_link_libraries(${TARGET_NAME} ${DEPENDENCIES})
-    ament_target_dependencies(${TARGET_NAME} ${DEPENDENCIES})
+    ament_target_dependencies("${TARGET_NAME}_component" ${DEPENDENCIES})
 
     #install(TARGETS ${TARGET_NAME}
     #        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -61,6 +65,7 @@ function(generate_filter_chain_source NODE_NAME)
 
     set(NODE_NAME "${NODE_NAME}_filter_chain")
 
+    set(CLASS_NAME "${MESSAGE_TYPE}FilterChainNode")
     set(FILE_NAME "${MESSAGE_TYPE}FilterChain.cpp")
 
     set(OUTPUT_FILE "${PROJECT_BINARY_DIR}/${FILE_NAME}")
@@ -72,6 +77,7 @@ function(generate_filter_chain_source NODE_NAME)
             -D "MESSAGE_TYPE=${MESSAGE_TYPE}"
             -D "HEADER_NAME=${HEADER_NAME}"
             -D "BASE_FILTER=${BASE_FILTER}"
+            -D "CLASS_NAME=${CLASS_NAME}"
             -D "NODE_NAME=${NODE_NAME}"
             -D "OUTPUT_FILE=${OUTPUT_FILE}"
             -P "${CMAKE_SOURCE_DIR}/cmake/GenerateFilterChainNode.cmake"
@@ -81,10 +87,10 @@ function(generate_filter_chain_source NODE_NAME)
             VERBATIM
     )
 
-    add_filter_chain_node(${NODE_NAME} "${OUTPUT_FILE}")
+    add_filter_chain_node(${NODE_NAME} "${CLASS_NAME}" "${OUTPUT_FILE}")
 
     if (SOURCES)
-        target_sources(${NODE_NAME} PRIVATE ${SOURCES})
+        target_sources(${NODE_NAME}_component PRIVATE ${SOURCES})
     endif ()
 endfunction()
 
