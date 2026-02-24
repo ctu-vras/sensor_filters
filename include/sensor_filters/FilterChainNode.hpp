@@ -15,18 +15,19 @@ namespace sensor_filters {
     template <typename T, typename Base = FilterChainBase<T>>
     class FilterChainNode : public rclcpp::Node, public Base {
     public:
-        explicit FilterChainNode() : Base(), Node("") {}
+        explicit FilterChainNode(const std::string& name) : Node(name), Base() {}
     };
 
 
     template <typename T, typename Base = FilterChainBase<T>>
-    void spinFilterChain(const std::string& filterChainNamespace, const int argc, char** argv) {
+    void spinFilterChain(const std::string& name, const int argc, char** argv) {
         rclcpp::init(argc, argv);
-        const auto node = std::make_shared<FilterChainNode<T, Base>>();
+        const auto node = std::make_shared<FilterChainNode<T, Base>>(name);
         node->initFilters(
-            filterChainNamespace, node, false,
+            name, node, false,
             node->declare_parameter("input_queue_size", 10),
-            node->declare_parameter("output_queue_size", 10));
+            node->declare_parameter("output_queue_size", 10)
+        );
         rclcpp::spin(node);
     }
 }
