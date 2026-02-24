@@ -23,7 +23,8 @@ namespace sensor_filters {
             );
         }
 
-        explicit FilterChainNode(const std::string& name) : Node(name), Base() {
+        //! use a composable node instead
+        [[deprecated]] explicit FilterChainNode(const std::string& name) : Node(name), Base() {
             this->initFilters(
                 name, this->node, false,
                 this->declare_parameter("input_queue_size", 10),
@@ -32,11 +33,11 @@ namespace sensor_filters {
         }
     };
 
-
+    //! this method is deprecated, and instead a composable node should be used
     template <typename T, typename Base = FilterChainBase<T>>
-    void spinFilterChain(const int argc, char** argv) {
+    [[deprecated]] void spinFilterChain(const std::string& name, const int argc, char** argv) {
         rclcpp::init(argc, argv);
-        const auto node = std::make_shared<FilterChainNode<T, Base>>();
+        const auto node = std::make_shared<FilterChainNode<T, Base>>(name);
         rclcpp::spin(node);
     }
 }
