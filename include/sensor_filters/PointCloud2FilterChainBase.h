@@ -11,36 +11,33 @@
 #include <memory>
 #include <string>
 
-#include <point_cloud_transport/point_cloud_transport.h>
-#include <point_cloud_transport/publisher.h>
-#include <point_cloud_transport/subscriber.h>
-#include <sensor_msgs/PointCloud2.h>
+#include <point_cloud_transport/point_cloud_transport.hpp>
+#include <point_cloud_transport/publisher.hpp>
+#include <point_cloud_transport/subscriber.hpp>
+#include <sensor_msgs/msg/point_cloud2.hpp>
 
 #include <sensor_filters/FilterChainBase.h>
 
 namespace sensor_filters
 {
-class PointCloud2FilterChainBase : public FilterChainBase<sensor_msgs::PointCloud2>
-{
+class PointCloud2FilterChainBase : public FilterChainBase<sensor_msgs::msg::PointCloud2> {
 public:
-  PointCloud2FilterChainBase() : FilterChainBase<sensor_msgs::PointCloud2>()
-  {
+  PointCloud2FilterChainBase() : FilterChainBase<sensor_msgs::msg::PointCloud2>() {
   }
+
+  void initFilters(const std::string& filterChainNamespace, rclcpp::Node::SharedPtr node,
+                   bool useSharedPtrMessages, long inputQueueSize, long outputQueueSize) override;
 
 protected:
   std::unique_ptr<point_cloud_transport::PointCloudTransport> pct;
   point_cloud_transport::Publisher pctPublisher;
   point_cloud_transport::Subscriber pctSubscriber;
 
-  void initFilters(const std::string& filterChainNamespace, ros::NodeHandle filterNodeHandle,
-                   ros::NodeHandle topicNodeHandle, bool useSharedPtrMessages, size_t inputQueueSize,
-                   size_t outputQueueSize) override;
-
   void advertise() override;
 
   void subscribe() override;
 
-  void publishShared(const sensor_msgs::PointCloud2ConstPtr& msg) override;
+  void publishShared(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg) override;
 };
 
 }

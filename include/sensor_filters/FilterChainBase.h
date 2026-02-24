@@ -9,16 +9,8 @@
  */
 
 #include <string>
-
-#include <ros/ros.h>
-
-#if ROS_VERSION_MINIMUM(1, 15, 0)
+#include <rcl/rcl.h>
 #include <filters/filter_chain.hpp>
-#else
-
-#include <filters/filter_chain.h>
-
-#endif
 
 
 namespace sensor_filters
@@ -28,79 +20,86 @@ template<typename T>
 class FilterChainBase
 {
 protected:
-  ros::Subscriber inputSubscriber;
-  ros::Publisher outputPublisher;
-  ros::NodeHandle topicNodeHandle;
+  std::shared_ptr<rclcpp::Subscription<T>> inputSubscriber;
+  std::shared_ptr<rclcpp::Publisher<T>> outputPublisher;
+  rclcpp::Node::SharedPtr node;
   size_t inputQueueSize{10u};
   size_t outputQueueSize{10u};
-  bool useSharedPtrMessages{true};
+  bool usePtrMessages{true};
 
   filters::FilterChain<T> filterChain;
   T msg;
 
-  typedef ros::message_traits::DataType<T> DataType;
-
 public:
   FilterChainBase() :
-    filterChain(std::string(DataType::value()).replace(std::string(DataType::value()).find('/'), 1, "::"))
+      filterChain(std::string(typeid(T).name()))
   {
   }
 
   virtual ~FilterChainBase() = default;
 
-protected:
   virtual void initFilters(
-    const std::string& filterChainNamespace, ros::NodeHandle filterNodeHandle, ros::NodeHandle topicNodeHandle,
-    const bool useSharedPtrMessages, const size_t inputQueueSize, const size_t outputQueueSize)
-  {
-    if (!this->filterChain.configure(filterChainNamespace, filterNodeHandle))
-    {
-      ROS_ERROR_STREAM("Configuration of filter chain for "
-                         << DataType::value() << " is invalid, the chain will not be run.");
+    const std::string& filterChainNamespace, rclcpp::Node::SharedPtr node,
+    const bool usePtrMessages, long inputQueueSize, long outputQueueSize) {
+    if (!this->filterChain.configure(filterChainNamespace, node->get_node_logging_interface(), node->get_node_parameters_interface())) {
+      RCLCPP_ERROR_STREAM(node->get_logger(), "Configuration of filter chain for "
+                          << typeid(T).name() << " is invalid, the chain will not be run.");
       throw std::runtime_error("Filter configuration error");
     }
 
-    ROS_INFO_STREAM("Configured filter chain of type " << DataType::value() << " from namespace "
-                                                       << filterNodeHandle.getNamespace() << "/"
-                                                       << filterChainNamespace);
+    RCLCPP_INFO_STREAM(node->get_logger(), "Configured filter chain of type " << typeid(T).name() << " from namespace "
+                       << node->get_namespace() << "/"
+                       << filterChainNamespace);
 
-    this->topicNodeHandle = topicNodeHandle;
+    this->node = node;
     this->outputQueueSize = outputQueueSize;
     this->inputQueueSize = inputQueueSize;
-    this->useSharedPtrMessages = useSharedPtrMessages;
+    this->usePtrMessages = usePtrMessages;
 
     this->advertise();
     this->subscribe();
   }
 
+protected:
+
   virtual void advertise()
   {
-    this->outputPublisher = this->topicNodeHandle.template advertise<T>("output", this->outputQueueSize);
+    this->outputPublisher = this->node->create_publisher<T>("output", this->outputQueueSize);
   }
 
-  virtual void subscribe()
-  {
-    if (this->useSharedPtrMessages)
-      this->inputSubscriber = this->topicNodeHandle.subscribe(
-        "input", this->inputQueueSize, &FilterChainBase::callbackShared, this);
-    else
-      this->inputSubscriber = this->topicNodeHandle.subscribe(
-        "input", this->inputQueueSize, &FilterChainBase::callbackReference, this);
+  virtual void subscribe() {
+  if (this->usePtrMessages)
+    this->inputSubscriber = this->node->template create_subscription<T>(
+      "input", this->inputQueueSize, [this](const typename T::UniquePtr& msg) {
+      FilterChainBase::callbackUnique(msg);
+      });
+  else
+    this->inputSubscriber = this->node->template create_subscription<T>(
+      "input", this->inputQueueSize, [this](const T& msg) {
+      FilterChainBase::callbackReference(msg);
+      });
   }
 
-  virtual void publishShared(const typename T::ConstPtr& msg)
-  {
-    this->outputPublisher.publish(msg);
+  virtual void publishUnique(typename T::UniquePtr& msg) {
+    this->outputPublisher->publish(std::move(msg));
   }
 
-  virtual void publishReference(const T& msg)
-  {
-    this->outputPublisher.publish(msg);
+  virtual void publishShared(const typename T::ConstSharedPtr& msg) {
+    RCLCPP_ERROR_THROTTLE(node->get_logger(), *node->get_clock(), 1000, "must be overriden by child class");
   }
 
-  virtual void callbackShared(const typename T::ConstPtr& msgIn)
-  {
-    typename T::Ptr msgOut(new T);
+  virtual void publishReference(const T& msg) {
+    this->outputPublisher->publish(msg);
+  }
+
+  virtual void callbackUnique(const typename T::UniquePtr& msgIn) {
+    typename T::UniquePtr msgOut = std::make_unique<T>();
+    if (this->filter(*msgIn, *msgOut))
+    this->publishUnique(msgOut);
+  }
+
+  virtual void callbackShared(const typename T::ConstSharedPtr& msgIn) {
+    typename T::SharedPtr msgOut = std::make_shared<T>();
     if (this->filter(*msgIn, *msgOut))
       this->publishShared(msgOut);
   }
@@ -111,16 +110,15 @@ protected:
       this->publishReference(this->msg);
   }
 
-  virtual bool filter(const T& msgIn, T& msgOut)
-  {
-    ros::WallTime start = ros::WallTime::now();
-    if (!this->filterChain.update(msgIn, msgOut))
-    {
-      ROS_ERROR_THROTTLE(1, "Filtering data from time %i.%i failed.",
-                         msgIn.header.stamp.sec, msgIn.header.stamp.nsec);
+  virtual bool filter(const T& msgIn, T& msgOut) {
+    const auto clock = node->get_clock();
+    const auto start = clock->now();
+    if (!this->filterChain.update(msgIn, msgOut)) {
+      RCLCPP_ERROR_THROTTLE(node->get_logger(), *clock, 1000, "Filtering data from time %i.%i failed.",
+                            msgIn.header.stamp.sec, msgIn.header.stamp.nanosec);
       return false;
     }
-    ROS_DEBUG_STREAM("Filtering took " << (ros::WallTime::now() - start).toSec() << " s.");
+    RCLCPP_DEBUG_STREAM(node->get_logger(), "Filtering took " << (clock->now() - start).seconds() << " s.");
     return true;
   }
 };

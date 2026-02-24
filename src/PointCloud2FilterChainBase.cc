@@ -4,9 +4,8 @@
 #include <memory>
 #include <string>
 
-#include <point_cloud_transport/point_cloud_transport.h>
-#include <ros/node_handle.h>
-#include <sensor_msgs/Image.h>
+#include <point_cloud_transport/point_cloud_transport.hpp>
+#include <sensor_msgs/msg/image.hpp>
 
 #include <sensor_filters/FilterChainBase.h>
 #include <sensor_filters/PointCloud2FilterChainBase.h>
@@ -14,31 +13,29 @@
 namespace sensor_filters
 {
 
-void PointCloud2FilterChainBase::initFilters(const std::string& filterChainNamespace, ros::NodeHandle filterNodeHandle,
-                                             ros::NodeHandle topicNodeHandle, const bool useSharedPtrMessages,
-                                             const size_t inputQueueSize, const size_t outputQueueSize)
+void PointCloud2FilterChainBase::initFilters(const std::string& filterChainNamespace, rclcpp::Node::SharedPtr node,
+                                             const bool useSharedPtrMessages, const long inputQueueSize, const long outputQueueSize)
 {
-  this->pct = std::make_unique<point_cloud_transport::PointCloudTransport>(topicNodeHandle);
-  FilterChainBase::initFilters(filterChainNamespace, filterNodeHandle, topicNodeHandle, useSharedPtrMessages,
+  this->pct = std::make_unique<point_cloud_transport::PointCloudTransport>(node);
+  FilterChainBase::initFilters(filterChainNamespace, node, useSharedPtrMessages,
                                inputQueueSize, outputQueueSize);
 }
 
 void PointCloud2FilterChainBase::advertise()
 {
-  const auto resolvedOutput = this->topicNodeHandle.resolveName("output");
-  this->pctPublisher = this->pct->advertise(resolvedOutput, this->outputQueueSize);
+  this->pctPublisher = this->pct->advertise("output", this->outputQueueSize);
 }
 
 void PointCloud2FilterChainBase::subscribe()
 {
-  const auto resolvedInput = this->topicNodeHandle.resolveName("input");
-  this->pctSubscriber = this->pct->subscribe<PointCloud2FilterChainBase>(
-      resolvedInput, this->inputQueueSize, &PointCloud2FilterChainBase::callbackShared, this);
+  this->pctSubscriber = this->pct->subscribe(
+    "input", this->inputQueueSize, [this](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg) {
+    PointCloud2FilterChainBase::callbackShared(msg);
+  });
 }
 
-void PointCloud2FilterChainBase::publishShared(const sensor_msgs::PointCloud2ConstPtr& msg)
+void PointCloud2FilterChainBase::publishShared(const typename sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg)
 {
   this->pctPublisher.publish(msg);
 }
-
 }

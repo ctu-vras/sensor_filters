@@ -14,33 +14,30 @@
 #include <image_transport/image_transport.h>
 #include <image_transport/publisher.h>
 #include <image_transport/subscriber.h>
-#include <sensor_msgs/Image.h>
+#include <sensor_msgs/msg/image.hpp>
 
 #include <sensor_filters/FilterChainBase.h>
 
 namespace sensor_filters
 {
-class ImageFilterChainBase : public FilterChainBase<sensor_msgs::Image>
-{
+class ImageFilterChainBase : public FilterChainBase<sensor_msgs::msg::Image> {
 public:
-  ImageFilterChainBase() : FilterChainBase<sensor_msgs::Image>()
-  {
+  ImageFilterChainBase() : FilterChainBase<sensor_msgs::msg::Image>() {
   }
+
+  void initFilters(const std::string& filterChainNamespace, rclcpp::Node::SharedPtr node,
+                   bool useSharedPtrMessages, long inputQueueSize, long outputQueueSize) override;
 
 protected:
   std::unique_ptr<image_transport::ImageTransport> it;
   image_transport::Publisher itPublisher;
   image_transport::Subscriber itSubscriber;
 
-  void initFilters(const std::string& filterChainNamespace, ros::NodeHandle filterNodeHandle,
-                   ros::NodeHandle topicNodeHandle, bool useSharedPtrMessages, size_t inputQueueSize,
-                   size_t outputQueueSize) override;
-
   void advertise() override;
 
   void subscribe() override;
 
-  void publishShared(const sensor_msgs::ImageConstPtr& msg) override;
+  void publishShared(const sensor_msgs::msg::Image::ConstSharedPtr& msg) override;
 };
 
 }
