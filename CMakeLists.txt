@@ -29,53 +29,78 @@ endforeach ()
 
 include_directories(include include/${PROJECT_NAME})
 
-set(types
-        CompressedImage
-        Image
-        Imu
-        Joy
-        LaserScan
-        MultiEchoLaserScan
-        MagneticField
-        NavSatFix
-        PointCloud
-        PointCloud2
-        Range
-        RelativeHumidity
-        Temperature
-)
+function(add_filter_chain_node TARGET_NAME FILENAME)
+    list(APPEND NODE_TARGETS ${TARGET_NAME})
 
-foreach (type IN LISTS types)
-    string(TOLOWER "${type}" type_lower)
+    add_executable(${TARGET_NAME} "${FILENAME}")
+    #target_link_libraries(${TARGET_NAME} ${DEPENDENCIES})
+    ament_target_dependencies(${TARGET_NAME} ${DEPENDENCIES})
 
-    set(node_name "${type_lower}_filter_chain")
+    #install(TARGETS ${TARGET_NAME}
+    #        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+    #)
 
-    list(APPEND NODE_TARGETS ${node_name})
-
-    #    add_library(${node_name} src/${type}FilterChainNodelet.cpp)
-    #    #target_link_libraries(${nodelet_name} ${DEPENDENCIES})
-    #    ament_target_dependencies(${node_name} ${DEPENDENCIES})
-
-    add_executable(${node_name} src/${type}FilterChainNode.cpp)
-    #target_link_libraries(${node_name} ${DEPENDENCIES})
-    ament_target_dependencies(${node_name} ${DEPENDENCIES})
-
-    #    install(TARGETS ${node_name}
-    #            RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-    #    )
-
-    install(TARGETS ${node_name}
+    install(TARGETS ${TARGET_NAME}
             ARCHIVE DESTINATION lib
             LIBRARY DESTINATION lib
             RUNTIME DESTINATION lib
     )
-endforeach ()
+endfunction()
 
-# Additional sources for the targets that use custom transport
-#target_sources(image_filter_chain_nodelet PRIVATE src/ImageFilterChainBase.cpp)
-target_sources(image_filter_chain PRIVATE src/ImageFilterChainBase.cpp)
-#target_sources(pointcloud2_filter_chain_nodelet PRIVATE src/PointCloud2FilterChainBase.cpp)
-target_sources(pointcloud2_filter_chain PRIVATE src/PointCloud2FilterChainBase.cpp)
+function(generate_filter_chain_source NODE_NAME)
+    set(oneValueArgs HEADER_NAME MESSAGE_TYPE BASE_FILTER)
+    set(multiValueArgs SOURCES)
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+            "" "${oneValueArgs}" "${multiValueArgs}"
+    )
+
+    set(BASE_FILTER "${arg_BASE_FILTER}")
+    set(HEADER_NAME "${arg_HEADER_NAME}")
+    set(MESSAGE_TYPE "${arg_MESSAGE_TYPE}")
+    set(SOURCES "${arg_SOURCES}")
+
+    set(NODE_NAME "${NODE_NAME}_filter_chain")
+
+    set(FILE_NAME "${MESSAGE_TYPE}FilterChain.cpp")
+
+    set(OUTPUT_FILE "${PROJECT_BINARY_DIR}/${FILE_NAME}")
+
+    add_custom_command(
+            OUTPUT "${OUTPUT_FILE}"
+            COMMAND ${CMAKE_COMMAND}
+            -D "PROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+            -D "MESSAGE_TYPE=${MESSAGE_TYPE}"
+            -D "HEADER_NAME=${HEADER_NAME}"
+            -D "BASE_FILTER=${BASE_FILTER}"
+            -D "NODE_NAME=${NODE_NAME}"
+            -D "OUTPUT_FILE=${OUTPUT_FILE}"
+            -P "${CMAKE_SOURCE_DIR}/cmake/GenerateFilterChainNode.cmake"
+            DEPENDS
+            "${CMAKE_CURRENT_SOURCE_DIR}/cmake/FilterChainNode.cpp.in"
+            "${CMAKE_SOURCE_DIR}/cmake/GenerateFilterChainNode.cmake"
+            VERBATIM
+    )
+
+    add_filter_chain_node(${NODE_NAME} "${OUTPUT_FILE}")
+
+    if (SOURCES)
+        target_sources(${NODE_NAME} PRIVATE ${SOURCES})
+    endif ()
+endfunction()
+
+generate_filter_chain_source("compressed_image" HEADER_NAME "compressed_image" MESSAGE_TYPE "CompressedImage")
+generate_filter_chain_source("image" HEADER_NAME "image" MESSAGE_TYPE "Image" BASE_FILTER "ImageFilterChainBase" SOURCES src/ImageFilterChainBase.cpp)
+generate_filter_chain_source("imu" HEADER_NAME "imu" MESSAGE_TYPE "Imu")
+generate_filter_chain_source("joy" HEADER_NAME "joy" MESSAGE_TYPE "Joy")
+generate_filter_chain_source("scan" HEADER_NAME "laser_scan" MESSAGE_TYPE "LaserScan")
+generate_filter_chain_source("magnetic_field" HEADER_NAME "magnetic_field" MESSAGE_TYPE "MagneticField")
+generate_filter_chain_source("multi_echo_scan" HEADER_NAME "multi_echo_laser_scan" MESSAGE_TYPE "MultiEchoLaserScan")
+generate_filter_chain_source("navsat_fix" HEADER_NAME "nav_sat_fix" MESSAGE_TYPE "NavSatFix")
+generate_filter_chain_source("pointcloud" HEADER_NAME "point_cloud" MESSAGE_TYPE "PointCloud")
+generate_filter_chain_source("pointcloud2" HEADER_NAME "point_cloud2" MESSAGE_TYPE "PointCloud2" BASE_FILTER "PointCloud2FilterChainBase" SOURCES src/PointCloud2FilterChainBase.cpp)
+generate_filter_chain_source("range" HEADER_NAME "range" MESSAGE_TYPE "Range")
+generate_filter_chain_source("relative_humidity" HEADER_NAME "relative_humidity" MESSAGE_TYPE "RelativeHumidity")
+generate_filter_chain_source("temperature" HEADER_NAME "temperature" MESSAGE_TYPE "Temperature")
 
 # TODO 2026-02-23 (solonovamax): finish this
 #
