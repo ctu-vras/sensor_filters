@@ -10,34 +10,34 @@
 
 #include <memory>
 #include <string>
-
 #include <image_transport/image_transport.h>
 #include <image_transport/publisher.h>
 #include <image_transport/subscriber.h>
+#include <sensor_filters/FilterChainBase.h>
 #include <sensor_msgs/msg/image.hpp>
 
-#include <sensor_filters/FilterChainBase.h>
+namespace sensor_filters {
+    class ImageFilterChainBase : public FilterChainBase<sensor_msgs::msg::Image> {
+    public:
+        ImageFilterChainBase() {}
 
-namespace sensor_filters
-{
-class ImageFilterChainBase : public FilterChainBase<sensor_msgs::msg::Image> {
-public:
-  ImageFilterChainBase() : FilterChainBase<sensor_msgs::msg::Image>() {
-  }
+        void initFilters(
+            const std::string& filterChainNamespace,
+            rclcpp::Node::SharedPtr node,
+            bool useSharedPtrMessages,
+            long inputQueueSize,
+            long outputQueueSize
+        ) override;
 
-  void initFilters(const std::string& filterChainNamespace, rclcpp::Node::SharedPtr node,
-                   bool useSharedPtrMessages, long inputQueueSize, long outputQueueSize) override;
+    protected:
+        std::unique_ptr<image_transport::ImageTransport> it;
+        image_transport::Publisher itPublisher;
+        image_transport::Subscriber itSubscriber;
 
-protected:
-  std::unique_ptr<image_transport::ImageTransport> it;
-  image_transport::Publisher itPublisher;
-  image_transport::Subscriber itSubscriber;
+        void advertise() override;
 
-  void advertise() override;
+        void subscribe() override;
 
-  void subscribe() override;
-
-  void publishShared(const sensor_msgs::msg::Image::ConstSharedPtr& msg) override;
-};
-
+        void publishShared(const sensor_msgs::msg::Image::ConstSharedPtr& msg) override;
+    };
 }

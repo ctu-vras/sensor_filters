@@ -10,34 +10,34 @@
 
 #include <memory>
 #include <string>
-
 #include <point_cloud_transport/point_cloud_transport.hpp>
 #include <point_cloud_transport/publisher.hpp>
 #include <point_cloud_transport/subscriber.hpp>
+#include <sensor_filters/FilterChainBase.h>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
-#include <sensor_filters/FilterChainBase.h>
+namespace sensor_filters {
+    class PointCloud2FilterChainBase : public FilterChainBase<sensor_msgs::msg::PointCloud2> {
+    public:
+        PointCloud2FilterChainBase() {}
 
-namespace sensor_filters
-{
-class PointCloud2FilterChainBase : public FilterChainBase<sensor_msgs::msg::PointCloud2> {
-public:
-  PointCloud2FilterChainBase() : FilterChainBase<sensor_msgs::msg::PointCloud2>() {
-  }
+        void initFilters(
+            const std::string& filterChainNamespace,
+            rclcpp::Node::SharedPtr node,
+            bool useSharedPtrMessages,
+            long inputQueueSize,
+            long outputQueueSize
+        ) override;
 
-  void initFilters(const std::string& filterChainNamespace, rclcpp::Node::SharedPtr node,
-                   bool useSharedPtrMessages, long inputQueueSize, long outputQueueSize) override;
+    protected:
+        std::unique_ptr<point_cloud_transport::PointCloudTransport> pct;
+        point_cloud_transport::Publisher pctPublisher;
+        point_cloud_transport::Subscriber pctSubscriber;
 
-protected:
-  std::unique_ptr<point_cloud_transport::PointCloudTransport> pct;
-  point_cloud_transport::Publisher pctPublisher;
-  point_cloud_transport::Subscriber pctSubscriber;
+        void advertise() override;
 
-  void advertise() override;
+        void subscribe() override;
 
-  void subscribe() override;
-
-  void publishShared(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg) override;
-};
-
+        void publishShared(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg) override;
+    };
 }
