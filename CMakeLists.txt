@@ -46,7 +46,7 @@ function(add_filter_chain_node TARGET_NAME CLASS_NAME FILENAME)
     install(TARGETS ${TARGET_NAME}
             ARCHIVE DESTINATION lib
             LIBRARY DESTINATION lib
-            RUNTIME DESTINATION lib
+            RUNTIME DESTINATION bin
     )
 endfunction()
 
@@ -107,38 +107,30 @@ generate_filter_chain_source("range" HEADER_NAME "range" MESSAGE_TYPE "Range")
 generate_filter_chain_source("relative_humidity" HEADER_NAME "relative_humidity" MESSAGE_TYPE "RelativeHumidity")
 generate_filter_chain_source("temperature" HEADER_NAME "temperature" MESSAGE_TYPE "Temperature")
 
-# TODO 2026-02-23 (solonovamax): finish this
-#
-#set(filters
-#        ChangeHeaderFilter
-#)
-#
-#foreach (filter IN LISTS filters)
-#    add_library(${filter} src/filters/${filter}.cpp)
-#    add_dependencies(${filter} ${catkin_EXPORTED_TARGETS})
-#    target_link_libraries(${filter} ${catkin_LIBRARIES})
-#    install(TARGETS ${filter}
-#            ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#            LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#            RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
-#    )
-#    install(FILES
-#            ${filter}.xml
-#            DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-#    )
-#endforeach ()
+set(filters
+        ChangeHeaderFilter
+)
+
+foreach (filter IN LISTS filters)
+    list(APPEND FILTER_LIBRARIES ${filter})
+
+    add_library(${filter} src/filters/${filter}.cpp)
+    ament_target_dependencies(${filter} ${DEPENDENCIES})
+    # target_link_libraries(${filter} ${catkin_LIBRARIES})
+    pluginlib_export_plugin_description_file(filters ${filter}.xml)
+endforeach ()
+
+install(TARGETS ${FILTER_LIBRARIES}
+        EXPORT export_${PROJECT_NAME}
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin
+)
 
 install(
         DIRECTORY include/
         DESTINATION include
 )
-
-#install(TARGETS ${NODE_TARGETS}
-#        EXPORT export_${PROJECT_NAME}
-#        RUNTIME DESTINATION bin
-#        ARCHIVE DESTINATION lib
-#        LIBRARY DESTINATION lib
-#)
 
 #if (CATKIN_ENABLE_TESTING)
 #    find_package(roslint REQUIRED)
@@ -173,10 +165,8 @@ install(
 #    roslint_add_test()
 #endif ()
 
-#ament_export_include_directories(include include/${PROJECT_NAME})
-#ament_export_dependencies(${DEPENDENCIES})
-#ament_export_libraries(${PROJECT_NAME} )
-#ament_export_targets(
-#  export_${PROJECT_NAME}
-#)
+ament_export_include_directories(include include/${PROJECT_NAME})
+ament_export_dependencies(${DEPENDENCIES})
+ament_export_libraries(${FILTER_LIBRARIES})
+ament_export_targets(export_${PROJECT_NAME})
 ament_package()

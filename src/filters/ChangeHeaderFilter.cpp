@@ -2,16 +2,8 @@
 // SPDX-FileCopyrightText: Czech Technical University in Prague
 
 #include <optional>
-
-#include <ros/ros.h>
-#include <std_msgs/Header.h>
-#include <pluginlib/class_list_macros.h>
-
-#if ROS_VERSION_MINIMUM(1, 15, 0)
 #include <filters/filter_chain.hpp>
-#else
-#include <filters/filter_chain.h>
-#endif
+#include <rclcpp/rclcpp.hpp>
 
 #include "include_all_msgs.hpp"
 
@@ -33,21 +25,12 @@ namespace sensor_filters {
             }
 
             {
-                uint32_t seqParam;
-                if (this->getParam("seq_relative", seqParam))
-                    this->newSeqRel = seqParam;
-
-                if (this->getParam("seq", seqParam))
-                    this->newSeqAbs = seqParam;
-            }
-
-            {
                 double stampParam;
                 if (this->getParam("stamp_relative", stampParam))
-                    this->newStampRel = ros::Duration(stampParam);
+                    this->newStampRel = rclcpp::Duration::from_seconds(stampParam);
 
                 if (this->getParam("stamp", stampParam))
-                    this->newStampAbs = ros::Time(stampParam);
+                    this->newStampAbs = rclcpp::Time(stampParam);
             }
 
             return true;
@@ -66,14 +49,8 @@ namespace sensor_filters {
             if (this->newFrameId.has_value())
                 data_out.header.frame_id = this->newFrameId.value();
 
-            if (this->newSeqRel.has_value())
-                data_out.header.seq += this->newSeqRel.value();
-
-            if (this->newSeqAbs.has_value())
-                data_out.header.seq = this->newSeqAbs.value();
-
             if (this->newStampRel.has_value())
-                data_out.header.stamp += this->newStampRel.value();
+                data_out.header.stamp = rclcpp::Time(data_out.header.stamp) + this->newStampRel.value();
 
             if (this->newStampAbs.has_value())
                 data_out.header.stamp = this->newStampAbs.value();
@@ -89,8 +66,8 @@ namespace sensor_filters {
         std::optional<uint32_t> newSeqAbs;
         std::optional<uint32_t> newSeqRel;
 
-        std::optional<ros::Time> newStampAbs;
-        std::optional<ros::Duration> newStampRel;
+        std::optional<rclcpp::Time> newStampAbs;
+        std::optional<rclcpp::Duration> newStampRel;
     };
 }
 

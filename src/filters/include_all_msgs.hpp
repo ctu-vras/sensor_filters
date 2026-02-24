@@ -8,32 +8,33 @@
 
 #pragma once
 
-#include <sensor_msgs/CompressedImage.h>
-#include <sensor_msgs/Image.h>
-#include <sensor_msgs/Imu.h>
-#include <sensor_msgs/Joy.h>
-#include <sensor_msgs/JoyFeedback.h>
-#include <sensor_msgs/LaserScan.h>
-#include <sensor_msgs/MagneticField.h>
-#include <sensor_msgs/MultiEchoLaserScan.h>
-#include <sensor_msgs/NavSatFix.h>
-#include <sensor_msgs/PointCloud.h>
-#include <sensor_msgs/PointCloud2.h>
-#include <sensor_msgs/Range.h>
-#include <sensor_msgs/RelativeHumidity.h>
-#include <sensor_msgs/Temperature.h>
+#include <pluginlib/class_list_macros.hpp>
+#include <sensor_msgs/msg/compressed_image.hpp>
+#include <sensor_msgs/msg/image.hpp>
+#include <sensor_msgs/msg/imu.hpp>
+#include <sensor_msgs/msg/joy.hpp>
+#include <sensor_msgs/msg/joy_feedback.hpp>
+#include <sensor_msgs/msg/laser_scan.hpp>
+#include <sensor_msgs/msg/magnetic_field.hpp>
+#include <sensor_msgs/msg/multi_echo_laser_scan.hpp>
+#include <sensor_msgs/msg/nav_sat_fix.hpp>
+#include <sensor_msgs/msg/point_cloud.hpp>
+#include <sensor_msgs/msg/point_cloud2.hpp>
+#include <sensor_msgs/msg/range.hpp>
+#include <sensor_msgs/msg/relative_humidity.hpp>
+#include <sensor_msgs/msg/temperature.hpp>
 
 #define REGISTER_ALL_MSG_FILTER(filter) \
-PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::CompressedImage>, filters::FilterBase<sensor_msgs::CompressedImage>) \
-PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::Image>, filters::FilterBase<sensor_msgs::Image>) \
-PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::Imu>, filters::FilterBase<sensor_msgs::Imu>) \
-PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::Joy>, filters::FilterBase<sensor_msgs::Joy>) \
-PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::LaserScan>, filters::FilterBase<sensor_msgs::LaserScan>) \
-PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::MagneticField>, filters::FilterBase<sensor_msgs::MagneticField>) \
-PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::MultiEchoLaserScan>, filters::FilterBase<sensor_msgs::MultiEchoLaserScan>) \
-PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::NavSatFix>, filters::FilterBase<sensor_msgs::NavSatFix>) \
-PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::PointCloud>, filters::FilterBase<sensor_msgs::PointCloud>) \
-PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::PointCloud2>, filters::FilterBase<sensor_msgs::PointCloud2>) \
-PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::Range>, filters::FilterBase<sensor_msgs::Range>) \
-PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::RelativeHumidity>, filters::FilterBase<sensor_msgs::RelativeHumidity>) \
-PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::Temperature>, filters::FilterBase<sensor_msgs::Temperature>)
+PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::msg::CompressedImage>, filters::FilterBase<sensor_msgs::msg::CompressedImage>) \
+PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::msg::Image>, filters::FilterBase<sensor_msgs::msg::Image>) \
+PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::msg::Imu>, filters::FilterBase<sensor_msgs::msg::Imu>) \
+PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::msg::Joy>, filters::FilterBase<sensor_msgs::msg::Joy>) \
+PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::msg::LaserScan>, filters::FilterBase<sensor_msgs::msg::LaserScan>) \
+PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::msg::MagneticField>, filters::FilterBase<sensor_msgs::msg::MagneticField>) \
+PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::msg::MultiEchoLaserScan>, filters::FilterBase<sensor_msgs::msg::MultiEchoLaserScan>) \
+PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::msg::NavSatFix>, filters::FilterBase<sensor_msgs::msg::NavSatFix>) \
+PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::msg::PointCloud>, filters::FilterBase<sensor_msgs::msg::PointCloud>) \
+PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::msg::PointCloud2>, filters::FilterBase<sensor_msgs::msg::PointCloud2>) \
+PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::msg::Range>, filters::FilterBase<sensor_msgs::msg::Range>) \
+PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::msg::RelativeHumidity>, filters::FilterBase<sensor_msgs::msg::RelativeHumidity>) \
+PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::msg::Temperature>, filters::FilterBase<sensor_msgs::msg::Temperature>)
