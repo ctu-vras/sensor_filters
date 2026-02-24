@@ -4,8 +4,8 @@
 #include <memory>
 #include <string>
 #include <point_cloud_transport/point_cloud_transport.hpp>
-#include <sensor_filters/FilterChainBase.h>
-#include <sensor_filters/PointCloud2FilterChainBase.h>
+#include <sensor_filters/FilterChainBase.hpp>
+#include <sensor_filters/PointCloud2FilterChainBase.hpp>
 
 namespace sensor_filters {
     void PointCloud2FilterChainBase::initFilters(

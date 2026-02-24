@@ -13,7 +13,7 @@
 #include <point_cloud_transport/point_cloud_transport.hpp>
 #include <point_cloud_transport/publisher.hpp>
 #include <point_cloud_transport/subscriber.hpp>
-#include <sensor_filters/FilterChainBase.h>
+#include <sensor_filters/FilterChainBase.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
 namespace sensor_filters {

@@ -9,7 +9,7 @@
  */
 
 #include <string>
-#include <sensor_filters/FilterChainBase.h>
+#include <sensor_filters/FilterChainBase.hpp>
 
 namespace sensor_filters {
     template <typename T, typename Base = FilterChainBase<T>>

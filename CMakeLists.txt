@@ -52,11 +52,11 @@ foreach (type IN LISTS types)
 
     list(APPEND NODE_TARGETS ${node_name})
 
-    #    add_library(${node_name} src/${type}FilterChainNodelet.cc)
+    #    add_library(${node_name} src/${type}FilterChainNodelet.cpp)
     #    #target_link_libraries(${nodelet_name} ${DEPENDENCIES})
     #    ament_target_dependencies(${node_name} ${DEPENDENCIES})
 
-    add_executable(${node_name} src/${type}FilterChainNode.cc)
+    add_executable(${node_name} src/${type}FilterChainNode.cpp)
     #target_link_libraries(${node_name} ${DEPENDENCIES})
     ament_target_dependencies(${node_name} ${DEPENDENCIES})
 
@@ -72,10 +72,10 @@ foreach (type IN LISTS types)
 endforeach ()
 
 # Additional sources for the targets that use custom transport
-#target_sources(image_filter_chain_nodelet PRIVATE src/ImageFilterChainBase.cc)
-target_sources(image_filter_chain PRIVATE src/ImageFilterChainBase.cc)
-#target_sources(pointcloud2_filter_chain_nodelet PRIVATE src/PointCloud2FilterChainBase.cc)
-target_sources(pointcloud2_filter_chain PRIVATE src/PointCloud2FilterChainBase.cc)
+#target_sources(image_filter_chain_nodelet PRIVATE src/ImageFilterChainBase.cpp)
+target_sources(image_filter_chain PRIVATE src/ImageFilterChainBase.cpp)
+#target_sources(pointcloud2_filter_chain_nodelet PRIVATE src/PointCloud2FilterChainBase.cpp)
+target_sources(pointcloud2_filter_chain PRIVATE src/PointCloud2FilterChainBase.cpp)
 
 # TODO 2026-02-23 (solonovamax): finish this
 #
@@ -84,7 +84,7 @@ target_sources(pointcloud2_filter_chain PRIVATE src/PointCloud2FilterChainBase.c
 #)
 #
 #foreach (filter IN LISTS filters)
-#    add_library(${filter} src/filters/${filter}.cc)
+#    add_library(${filter} src/filters/${filter}.cpp)
 #    add_dependencies(${filter} ${catkin_EXPORTED_TARGETS})
 #    target_link_libraries(${filter} ${catkin_LIBRARIES})
 #    install(TARGETS ${filter}
@@ -132,7 +132,7 @@ install(
 #    # Roslint C++ - checks formatting and some other rules for C++ files
 #
 #    file(GLOB_RECURSE ROSLINT_INCLUDE include/*.h include/*.hpp)
-#    file(GLOB_RECURSE ROSLINT_SRC src/*.cc src/filters/*.cc src/filters/*.hh examples/*.cpp)
+#    file(GLOB_RECURSE ROSLINT_SRC src/*.cpp src/filters/*.cpp src/filters/*.hpp examples/*.cpp)
 #    #file(GLOB_RECURSE ROSLINT_TEST test/*.cpp)
 #
 #    set(ROSLINT_CPP_OPTS "--extensions=h,hpp,hh,c,cpp,cc;--linelength=120;--filter=\

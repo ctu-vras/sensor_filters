@@ -13,7 +13,7 @@
 #include <image_transport/image_transport.h>
 #include <image_transport/publisher.h>
 #include <image_transport/subscriber.h>
-#include <sensor_filters/FilterChainBase.h>
+#include <sensor_filters/FilterChainBase.hpp>
 #include <sensor_msgs/msg/image.hpp>
 
 namespace sensor_filters {

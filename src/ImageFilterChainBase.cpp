@@ -4,8 +4,8 @@
 #include <memory>
 #include <string>
 #include <image_transport/image_transport.hpp>
-#include <sensor_filters/FilterChainBase.h>
-#include <sensor_filters/ImageFilterChainBase.h>
+#include <sensor_filters/FilterChainBase.hpp>
+#include <sensor_filters/ImageFilterChainBase.hpp>
 #include <sensor_msgs/msg/image.hpp>
 
 namespace sensor_filters {
