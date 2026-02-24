@@ -13,7 +13,6 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif ()
 
 set(DEPENDENCIES
-        robot_body_filter_msgs
         rclcpp
         rclcpp_components
         filters
