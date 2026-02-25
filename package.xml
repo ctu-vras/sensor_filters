@@ -15,26 +15,25 @@ SPDX-FileCopyrightText: Czech Technical University in Prague
 
   <url type="website">https://github.com/ctu-vras/sensor_filters</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>filters</depend>
-  <depend>nodelet</depend>
-  <depend>roscpp</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>
 
+  <build_depend>backward_ros</build_depend>
   <build_depend>image_transport</build_depend>
   <build_depend>point_cloud_transport</build_depend>
 
+  <exec_depend>backward_ros</exec_depend>
   <exec_depend>image_transport</exec_depend>
   <exec_depend>point_cloud_transport</exec_depend>
 
-  <test_depend condition="$ROS_PYTHON_VERSION == 2">python-catkin-lint</test_depend>
-  <test_depend condition="$ROS_PYTHON_VERSION == 3">python3-catkin-lint</test_depend>
-  <test_depend>roslint</test_depend>
+  <!--test_depend>cras_lint</test_depend-->  <!-- TODO enable linting -->
 
   <export>
-    <nodelet plugin="${prefix}/nodelets.xml" />
-
+    <build_type>ament_cmake</build_type>
     <filters plugin="${prefix}/ChangeHeaderFilter.xml" />
   </export>
 </package>
