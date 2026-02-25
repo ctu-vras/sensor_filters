@@ -1,0 +1,66 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# SPDX-FileCopyrightText: Czech Technical University in Prague
+
+# This config uses industrial_ci (https://github.com/ros-industrial/industrial_ci.git).
+# For troubleshooting, see readme (https://github.com/ros-industrial/industrial_ci/blob/master/README.rst)
+
+name: CI
+
+# This determines when this workflow is run
+on:
+  push:
+    branches: [ros2]
+  pull_request:
+    branches: [ros2]
+  workflow_dispatch: {}
+
+jobs:
+  industrial_ci:
+    strategy:
+      fail-fast: false
+      matrix:
+        env:
+          - {ROS_DISTRO: humble, ROS_REPO: testing, DOCKER_IMAGE: "ghcr.io/sloretz/ros:humble-perception", ALLOW_FAIL: yes}
+          - {ROS_DISTRO: jazzy, ROS_REPO: testing, DOCKER_IMAGE: "ghcr.io/sloretz/ros:jazzy-perception", ALLOW_FAIL: no}
+          - {ROS_DISTRO: kilted, ROS_REPO: testing, DOCKER_IMAGE: "ghcr.io/sloretz/ros:kilted-perception", ALLOW_FAIL: no}
+          - {ROS_DISTRO: rolling, ROS_REPO: testing, DOCKER_IMAGE: "ghcr.io/sloretz/ros:rolling-perception", ALLOW_FAIL: yes}
+        os: ["ubuntu-24.04", "ubuntu-24.04-arm"]
+    name: "${{ matrix.env.ROS_DISTRO }}-${{ matrix.os }}"
+    env:
+      CCACHE_DIR: &ccache ${{ github.workspace }}/.ccache # Directory for ccache (and how we enable ccache in industrial_ci)
+      VERBOSE_OUTPUT: &verbose true
+    runs-on: &runs-on ${{ matrix.os }}
+    steps: &steps
+      - uses: actions/checkout@v4
+      # This step will fetch/store the directory used by ccache before/after the ci run
+      - name: Cache ccache
+        uses: rhaschke/cache@main
+        continue-on-error: ${{ matrix.env.ALLOW_FAIL }}
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ matrix.os }}-${{ matrix.env.ROS_DISTRO }}-${{ matrix.env.ROS_REPO }}-${{ github.sha }}-${{ github.run_id }}
+          restore-keys: |
+            ccache-${{ matrix.os }}-${{ matrix.env.ROS_DISTRO }}-${{ matrix.env.ROS_REPO }}-${{ github.sha }}
+            ccache-${{ matrix.os }}-${{ matrix.env.ROS_DISTRO }}
+        env:
+          GHA_CACHE_SAVE: always
+      # Run industrial_ci
+      - uses: 'ros-industrial/industrial_ci@master'
+        env: ${{ matrix.env }}
+  # We also do a best effort test with GCC 11 (which is on RHEL 9 on ROS buildfarm)
+  industrial_ci_gcc_11:
+    strategy:
+      fail-fast: false
+      matrix:
+        env:
+          - { ROS_DISTRO: kilted, ROS_REPO: testing, DOCKER_IMAGE: "ghcr.io/sloretz/ros:kilted-perception", ALLOW_FAIL: yes }
+        os: [ "ubuntu-24.04", "ubuntu-24.04-arm" ]
+    name: "${{ matrix.env.ROS_DISTRO }}-${{ matrix.os }}-gcc11"
+    env:
+      CCACHE_DIR: *ccache
+      VERBOSE_OUTPUT: *verbose
+      ADDITIONAL_DEBS: "g++-11"
+      CC: "gcc-11"
+      CXX: "g++-11"
+    runs-on: *runs-on
+    steps: *steps
