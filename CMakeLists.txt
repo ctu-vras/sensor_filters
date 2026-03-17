@@ -56,7 +56,7 @@ function(add_filter_chain_node TARGET_NAME CLASS_NAME FILENAME)
     #        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
     #)
 
-    install(TARGETS ${TARGET_NAME}
+    install(TARGETS "${TARGET_NAME}_component"
             ARCHIVE DESTINATION lib
             LIBRARY DESTINATION lib
             RUNTIME DESTINATION bin

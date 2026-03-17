@@ -54,17 +54,17 @@ namespace sensor_filters {
         }
 
     protected:
-        virtual void advertise();
+        virtual void advertise() = 0;
 
-        virtual void subscribe();
+        virtual void subscribe() = 0;
 
-        virtual bool isActive();
+        virtual bool isActive() = 0;
 
-        virtual void publishUnique(typename T::UniquePtr& msg);
+        virtual void publishUnique(typename T::UniquePtr& msg) = 0;
 
-        virtual void publishShared(const typename T::ConstSharedPtr& msg);
+        virtual void publishShared(const typename T::ConstSharedPtr& msg) = 0;
 
-        virtual void publishReference(const T& msg);
+        virtual void publishReference(const T& msg) = 0;
 
         virtual void callbackUnique(const typename T::UniquePtr& msgIn) {
             if (!isActive())
