@@ -30,16 +30,29 @@ foreach (dependency IN ITEMS ${DEPENDENCIES})
     find_package(${dependency} REQUIRED)
 endforeach ()
 
+set(LIBRARY_TARGETS
+        ${rclcpp_TARGETS}
+        ${rclcpp_components_TARGETS}
+        ${rclcpp_lifecycle_TARGETS}
+        ${lifecycle_msgs_TARGETS}
+        ${filters_TARGETS}
+        ${sensor_msgs_TARGETS}
+        ${image_transport_TARGETS}
+        ${point_cloud_transport_TARGETS}
+        ${backward_ros_TARGETS}
+)
+
+message("LIBRARY_TARGETS=${LIBRARY_TARGETS}")
+
 include_directories(include include/${PROJECT_NAME})
 
 function(add_filter_chain_node TARGET_NAME CLASS_NAME FILENAME)
     list(APPEND NODE_TARGETS ${TARGET_NAME})
 
     add_library("${TARGET_NAME}_component" SHARED "${FILENAME}")
-    rclcpp_components_register_node(${TARGET_NAME}_component PLUGIN "sensor_filters::${CLASS_NAME}" EXECUTABLE ${TARGET_NAME})
+    rclcpp_components_register_node("${TARGET_NAME}_component" PLUGIN "sensor_filters::${CLASS_NAME}" EXECUTABLE ${TARGET_NAME})
     #add_executable(${TARGET_NAME} "${FILENAME}")
-    #target_link_libraries(${TARGET_NAME} ${DEPENDENCIES})
-    ament_target_dependencies("${TARGET_NAME}_component" ${DEPENDENCIES})
+    target_link_libraries("${TARGET_NAME}_component" PUBLIC ${LIBRARY_TARGETS})
 
     #install(TARGETS ${TARGET_NAME}
     #        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -153,8 +166,7 @@ foreach (filter IN LISTS filters)
     list(APPEND FILTER_LIBRARIES ${filter})
 
     add_library(${filter} src/filters/${filter}.cpp)
-    ament_target_dependencies(${filter} ${DEPENDENCIES})
-    # target_link_libraries(${filter} ${catkin_LIBRARIES})
+    target_link_libraries(${filter} PUBLIC ${LIBRARY_TARGETS})
     pluginlib_export_plugin_description_file(filters ${filter}.xml)
 endforeach ()
 
