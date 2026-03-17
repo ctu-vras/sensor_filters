@@ -42,8 +42,6 @@ set(LIBRARY_TARGETS
         ${backward_ros_TARGETS}
 )
 
-message("LIBRARY_TARGETS=${LIBRARY_TARGETS}")
-
 include_directories(include include/${PROJECT_NAME})
 
 function(add_filter_chain_node TARGET_NAME CLASS_NAME FILENAME)
