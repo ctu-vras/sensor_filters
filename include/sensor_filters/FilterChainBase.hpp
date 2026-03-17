@@ -10,115 +10,97 @@
 
 #include <string>
 #include <filters/filter_chain.hpp>
-#include <rcl/rcl.h>
+#include <utility>
 
 namespace sensor_filters {
     template <typename T>
     class FilterChainBase {
     protected:
-        std::shared_ptr<rclcpp::Subscription<T>> inputSubscriber;
-        std::shared_ptr<rclcpp::Publisher<T>> outputPublisher;
-        rclcpp::Node::SharedPtr node;
+        std::string filterChainNamespace;
         size_t inputQueueSize = 10u;
         size_t outputQueueSize = 10u;
         bool usePtrMessages = true;
+
+        rclcpp::node_interfaces::NodeBaseInterface::SharedPtr baseInterface;
+        rclcpp::node_interfaces::NodeClockInterface::SharedPtr clockInterface;
+        rclcpp::node_interfaces::NodeParametersInterface::SharedPtr paramsInterface;
+        rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr loggingInterface;
 
         filters::FilterChain<T> filterChain;
         T msg;
 
     public:
-        FilterChainBase() :
-            filterChain(std::string(typeid(T).name())) {}
+        FilterChainBase(
+            std::string filterChainNamespace,
+            const long inputQueueSize,
+            const long outputQueueSize,
+            const bool usePtrMessages,
+            rclcpp::node_interfaces::NodeBaseInterface::SharedPtr baseInterface,
+            rclcpp::node_interfaces::NodeClockInterface::SharedPtr clockInterface,
+            rclcpp::node_interfaces::NodeParametersInterface::SharedPtr paramsInterface,
+            rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr loggingInterface
+        ) : filterChainNamespace(std::move(filterChainNamespace)), inputQueueSize(inputQueueSize), outputQueueSize(outputQueueSize),
+            usePtrMessages(usePtrMessages), baseInterface(std::move(baseInterface)), clockInterface(std::move(clockInterface)),
+            paramsInterface(std::move(paramsInterface)), loggingInterface(std::move(loggingInterface)), filterChain(std::string(typeid(T).name())) {}
 
         virtual ~FilterChainBase() = default;
 
-        virtual void initFilters(
-            const std::string& filterChainNamespace,
-            rclcpp::Node::SharedPtr node,
-            const bool usePtrMessages,
-            long inputQueueSize,
-            long outputQueueSize
-        ) {
-            if (!this->filterChain.configure(filterChainNamespace, node->get_node_logging_interface(), node->get_node_parameters_interface())) {
-                RCLCPP_ERROR_STREAM(node->get_logger(), "Configuration of filter chain for "
+        virtual void configure() {
+            if (!this->filterChain.configure(filterChainNamespace, loggingInterface, paramsInterface)) {
+                RCLCPP_ERROR_STREAM(loggingInterface->get_logger(), "Configuration of filter chain for "
                                     << typeid(T).name() << " is invalid, the chain will not be run.");
                 throw std::runtime_error("Filter configuration error");
             }
-
-            RCLCPP_INFO_STREAM(node->get_logger(), "Configured filter chain of type " << typeid(T).name() << " from namespace "
-                               << node->get_namespace() << "/"
-                               << filterChainNamespace);
-
-            this->node = node;
-            this->outputQueueSize = outputQueueSize;
-            this->inputQueueSize = inputQueueSize;
-            this->usePtrMessages = usePtrMessages;
-
-            this->advertise();
-            this->subscribe();
         }
 
     protected:
-        virtual void advertise() {
-            this->outputPublisher = this->node->create_publisher<T>("output", this->outputQueueSize);
-        }
+        virtual void advertise();
 
-        virtual void subscribe() {
-            if (this->usePtrMessages) {
-                this->inputSubscriber = this->node->template create_subscription<T>(
-                    "input", this->inputQueueSize,
-                    [this](const typename T::UniquePtr& msg) {
-                        FilterChainBase::callbackUnique(msg);
-                    }
-                );
-            } else {
-                this->inputSubscriber = this->node->template create_subscription<T>(
-                    "input", this->inputQueueSize,
-                    [this](const T& msg) {
-                        FilterChainBase::callbackReference(msg);
-                    }
-                );
-            }
-        }
+        virtual void subscribe();
 
-        virtual void publishUnique(typename T::UniquePtr& msg) {
-            this->outputPublisher->publish(std::move(msg));
-        }
+        virtual bool isActive();
 
-        virtual void publishShared(const typename T::ConstSharedPtr& msg) {
-            RCLCPP_ERROR_THROTTLE(node->get_logger(), *node->get_clock(), 1000, "must be overriden by child class");
-        }
+        virtual void publishUnique(typename T::UniquePtr& msg);
 
-        virtual void publishReference(const T& msg) {
-            this->outputPublisher->publish(msg);
-        }
+        virtual void publishShared(const typename T::ConstSharedPtr& msg);
+
+        virtual void publishReference(const T& msg);
 
         virtual void callbackUnique(const typename T::UniquePtr& msgIn) {
+            if (!isActive())
+                return;
+
             typename T::UniquePtr msgOut = std::make_unique<T>();
             if (this->filter(*msgIn, *msgOut))
                 this->publishUnique(msgOut);
         }
 
         virtual void callbackShared(const typename T::ConstSharedPtr& msgIn) {
+            if (!isActive())
+                return;
+
             typename T::SharedPtr msgOut = std::make_shared<T>();
             if (this->filter(*msgIn, *msgOut))
                 this->publishShared(msgOut);
         }
 
         virtual void callbackReference(const T& msgIn) {
+            if (!isActive())
+                return;
+
             if (this->filter(msgIn, this->msg))
                 this->publishReference(this->msg);
         }
 
         virtual bool filter(const T& msgIn, T& msgOut) {
-            const auto clock = node->get_clock();
+            const auto clock = clockInterface->get_clock();
             const auto start = clock->now();
             if (!this->filterChain.update(msgIn, msgOut)) {
-                RCLCPP_ERROR_THROTTLE(node->get_logger(), *clock, 1000, "Filtering data from time %i.%i failed.",
+                RCLCPP_ERROR_THROTTLE(loggingInterface->get_logger(), *clock, 1000, "Filtering data from time %i.%i failed.",
                                       msgIn.header.stamp.sec, msgIn.header.stamp.nanosec);
                 return false;
             }
-            RCLCPP_DEBUG_STREAM(node->get_logger(), "Filtering took " << (clock->now() - start).seconds() << " s.");
+            RCLCPP_DEBUG_STREAM(loggingInterface->get_logger(), "Filtering took " << (clock->now() - start).seconds() << " s.");
             return true;
         }
     };

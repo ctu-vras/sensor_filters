@@ -15,6 +15,8 @@ endif ()
 set(DEPENDENCIES
         rclcpp
         rclcpp_components
+        rclcpp_lifecycle
+        lifecycle_msgs
         filters
         sensor_msgs
         image_transport
@@ -51,10 +53,11 @@ function(add_filter_chain_node TARGET_NAME CLASS_NAME FILENAME)
 endfunction()
 
 function(generate_filter_chain_source NODE_NAME)
+    set(options NO_LIFECYCLE)
     set(oneValueArgs HEADER_NAME MESSAGE_TYPE BASE_FILTER)
     set(multiValueArgs SOURCES)
     cmake_parse_arguments(PARSE_ARGV 0 arg
-            "" "${oneValueArgs}" "${multiValueArgs}"
+            "${options}" "${oneValueArgs}" "${multiValueArgs}"
     )
 
     set(BASE_FILTER "${arg_BASE_FILTER}")
@@ -79,6 +82,7 @@ function(generate_filter_chain_source NODE_NAME)
             -D "CLASS_NAME=${CLASS_NAME}"
             -D "NODE_NAME=${NODE_NAME}"
             -D "OUTPUT_FILE=${OUTPUT_FILE}"
+            -D "LIFECYCLE=OFF"
             -P "${CMAKE_SOURCE_DIR}/cmake/GenerateFilterChainNode.cmake"
             DEPENDS
             "${CMAKE_CURRENT_SOURCE_DIR}/cmake/FilterChainNode.cpp.in"
@@ -91,10 +95,42 @@ function(generate_filter_chain_source NODE_NAME)
     if (SOURCES)
         target_sources(${NODE_NAME}_component PRIVATE ${SOURCES})
     endif ()
+
+    if (NOT NO_LIFECYCLE)
+        set(LIFECYCLE_NODE_NAME "${NODE_NAME}_lifecycle")
+
+        set(LIFECYCLE_CLASS_NAME "Lifecycle${CLASS_NAME}")
+        set(LIFECYCLE_FILE_NAME "Lifecycle${FILE_NAME}")
+
+        set(LIFECYCLE_OUTPUT_FILE "${PROJECT_BINARY_DIR}/${LIFECYCLE_FILE_NAME}")
+
+        add_custom_command(
+                OUTPUT "${LIFECYCLE_OUTPUT_FILE}"
+                COMMAND ${CMAKE_COMMAND}
+                -D "PROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+                -D "MESSAGE_TYPE=${MESSAGE_TYPE}"
+                -D "HEADER_NAME=${HEADER_NAME}"
+                -D "BASE_FILTER=${BASE_FILTER}"
+                -D "CLASS_NAME=${LIFECYCLE_CLASS_NAME}"
+                -D "NODE_NAME=${LIFECYCLE_NODE_NAME}"
+                -D "OUTPUT_FILE=${LIFECYCLE_OUTPUT_FILE}"
+                -D "LIFECYCLE=ON"
+                -P "${CMAKE_SOURCE_DIR}/cmake/GenerateFilterChainNode.cmake"
+                DEPENDS
+                "${CMAKE_CURRENT_SOURCE_DIR}/cmake/LifecycleFilterChainNode.cpp.in"
+                "${CMAKE_SOURCE_DIR}/cmake/GenerateFilterChainNode.cmake"
+                VERBATIM
+        )
+
+        add_filter_chain_node(${LIFECYCLE_NODE_NAME} "${LIFECYCLE_CLASS_NAME}" "${LIFECYCLE_OUTPUT_FILE}")
+
+        if (SOURCES)
+            target_sources(${LIFECYCLE_NODE_NAME}_component PRIVATE ${SOURCES})
+        endif ()
+    endif ()
 endfunction()
 
 generate_filter_chain_source("compressed_image" HEADER_NAME "compressed_image" MESSAGE_TYPE "CompressedImage")
-generate_filter_chain_source("image" HEADER_NAME "image" MESSAGE_TYPE "Image" BASE_FILTER "ImageFilterChainBase" SOURCES src/ImageFilterChainBase.cpp)
 generate_filter_chain_source("imu" HEADER_NAME "imu" MESSAGE_TYPE "Imu")
 generate_filter_chain_source("joy" HEADER_NAME "joy" MESSAGE_TYPE "Joy")
 generate_filter_chain_source("scan" HEADER_NAME "laser_scan" MESSAGE_TYPE "LaserScan")
@@ -102,10 +138,11 @@ generate_filter_chain_source("magnetic_field" HEADER_NAME "magnetic_field" MESSA
 generate_filter_chain_source("multi_echo_scan" HEADER_NAME "multi_echo_laser_scan" MESSAGE_TYPE "MultiEchoLaserScan")
 generate_filter_chain_source("navsat_fix" HEADER_NAME "nav_sat_fix" MESSAGE_TYPE "NavSatFix")
 generate_filter_chain_source("pointcloud" HEADER_NAME "point_cloud" MESSAGE_TYPE "PointCloud")
-generate_filter_chain_source("pointcloud2" HEADER_NAME "point_cloud2" MESSAGE_TYPE "PointCloud2" BASE_FILTER "PointCloud2FilterChainBase" SOURCES src/PointCloud2FilterChainBase.cpp)
 generate_filter_chain_source("range" HEADER_NAME "range" MESSAGE_TYPE "Range")
 generate_filter_chain_source("relative_humidity" HEADER_NAME "relative_humidity" MESSAGE_TYPE "RelativeHumidity")
 generate_filter_chain_source("temperature" HEADER_NAME "temperature" MESSAGE_TYPE "Temperature")
+add_filter_chain_node("image" "ImageFilterChainNode" src/ImageFilterChainNode.cpp)
+add_filter_chain_node("pointcloud2" "PointCloud2FilterChainNode" src/PointCloud2FilterChainNode.cpp)
 
 set(filters
         ChangeHeaderFilter

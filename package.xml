@@ -20,6 +20,8 @@ SPDX-FileCopyrightText: Czech Technical University in Prague
   <depend>filters</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
+    <depend>rclcpp_lifecycle</depend>
+    <depend>lifecycle_msgs</depend>
   <depend>sensor_msgs</depend>
 
   <build_depend>backward_ros</build_depend>
