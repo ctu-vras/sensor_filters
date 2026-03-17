@@ -155,8 +155,8 @@ generate_filter_chain_source("pointcloud" HEADER_NAME "point_cloud" MESSAGE_TYPE
 generate_filter_chain_source("range" HEADER_NAME "range" MESSAGE_TYPE "Range")
 generate_filter_chain_source("relative_humidity" HEADER_NAME "relative_humidity" MESSAGE_TYPE "RelativeHumidity")
 generate_filter_chain_source("temperature" HEADER_NAME "temperature" MESSAGE_TYPE "Temperature")
-add_filter_chain_node("image" "ImageFilterChainNode" src/ImageFilterChainNode.cpp)
-add_filter_chain_node("pointcloud2" "PointCloud2FilterChainNode" src/PointCloud2FilterChainNode.cpp)
+add_filter_chain_node("image_filter_chain" "ImageFilterChainNode" src/ImageFilterChainNode.cpp)
+add_filter_chain_node("pointcloud2_filter_chain" "PointCloud2FilterChainNode" src/PointCloud2FilterChainNode.cpp)
 
 set(filters
         ChangeHeaderFilter
