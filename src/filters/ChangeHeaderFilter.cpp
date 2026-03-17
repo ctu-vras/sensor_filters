@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // SPDX-FileCopyrightText: Czech Technical University in Prague
 
+#include <chrono>
 #include <optional>
 #include <filters/filter_chain.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -29,8 +30,10 @@ namespace sensor_filters {
                 if (this->getParam("stamp_relative", stampParam))
                     this->newStampRel = rclcpp::Duration::from_seconds(stampParam);
 
-                if (this->getParam("stamp", stampParam))
-                    this->newStampAbs = rclcpp::Time(stampParam);
+                if (this->getParam("stamp", stampParam)) {
+                    const auto nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::duration<double>(stampParam));
+                    this->newStampAbs = rclcpp::Time(nanos.count());
+                }
             }
 
             return true;
