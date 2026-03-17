@@ -12,14 +12,16 @@ namespace sensor_filters {
     public:
         explicit PointCloud2FilterChainNode(const rclcpp::NodeOptions& options) : FilterChainNode("pointcloud2_filter_chain", options) {
             this->pct = std::make_unique<point_cloud_transport::PointCloudTransport>(this->shared_from_this());
+            PointCloud2FilterChainNode::configure();
         }
 
         [[deprecated]] explicit PointCloud2FilterChainNode() : FilterChainNode("pointcloud2_filter_chain") {
             this->pct = std::make_unique<point_cloud_transport::PointCloudTransport>(this->shared_from_this());
+            PointCloud2FilterChainNode::configure();
         }
 
     protected:
-        void publish() override {
+        void advertise() override {
             this->pctPublisher = this->pct->advertise("output", this->outputQueueSize);
         }
 

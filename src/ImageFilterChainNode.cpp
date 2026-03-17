@@ -12,14 +12,16 @@ namespace sensor_filters {
     public:
         explicit ImageFilterChainNode(const rclcpp::NodeOptions& options) : FilterChainNode("Image_filter_chain", options) {
             this->it = std::make_unique<image_transport::ImageTransport>(this->shared_from_this());
+            ImageFilterChainNode::configure();
         }
 
         [[deprecated]] explicit ImageFilterChainNode() : FilterChainNode("Image_filter_chain") {
             this->it = std::make_unique<image_transport::ImageTransport>(this->shared_from_this());
+            ImageFilterChainNode::configure();
         }
 
     protected:
-        void publish() override {
+        void advertise() override {
             this->itPublisher = this->it->advertise("output", this->outputQueueSize);
         }
 

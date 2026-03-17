@@ -49,15 +49,15 @@ namespace sensor_filters {
         void configure() override {
             Base::configure();
 
-            publish();
+            advertise();
             subscribe();
         }
 
-        virtual void publish() {
+        void advertise() override {
             this->outputPublisher = create_publisher<T>("output", this->outputQueueSize);
         }
 
-        virtual void subscribe() {
+        void subscribe() override {
             if (this->usePtrMessages) {
                 this->inputSubscriber = create_subscription<T>(
                     "input", this->inputQueueSize,

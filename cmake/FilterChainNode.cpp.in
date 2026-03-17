@@ -8,9 +8,13 @@
 namespace sensor_filters {
     class @CLASS_NAME@ : public FilterChainNode<@TEMPLATE_ARGS@> {
     public:
-        @CLASS_NAME@(const rclcpp::NodeOptions& options) : FilterChainNode("@NODE_NAME@", options) {}
+        @CLASS_NAME@(const rclcpp::NodeOptions& options) : FilterChainNode("@NODE_NAME@", options) {
+            @CLASS_NAME@::configure();
+        }
 
-        explicit @CLASS_NAME@(): FilterChainNode("@NODE_NAME@") {}
+        explicit @CLASS_NAME@(): FilterChainNode("@NODE_NAME@") {
+            @CLASS_NAME@::configure();
+        }
     };
 }
 
