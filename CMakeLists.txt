@@ -64,6 +64,7 @@ function(generate_filter_chain_source NODE_NAME)
     set(HEADER_NAME "${arg_HEADER_NAME}")
     set(MESSAGE_TYPE "${arg_MESSAGE_TYPE}")
     set(SOURCES "${arg_SOURCES}")
+    set(NO_LIFECYCLE "${arg_NO_LIFECYCLE}")
 
     set(NODE_NAME "${NODE_NAME}_filter_chain")
 
