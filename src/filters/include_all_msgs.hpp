@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <boost/preprocessor/seq/for_each.hpp>
 #include <pluginlib/class_list_macros.hpp>
 #include <sensor_msgs/msg/compressed_image.hpp>
 #include <sensor_msgs/msg/image.hpp>
@@ -24,17 +25,26 @@
 #include <sensor_msgs/msg/relative_humidity.hpp>
 #include <sensor_msgs/msg/temperature.hpp>
 
-#define REGISTER_ALL_MSG_FILTER(filter) \
-PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::msg::CompressedImage>, filters::FilterBase<sensor_msgs::msg::CompressedImage>) \
-PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::msg::Image>, filters::FilterBase<sensor_msgs::msg::Image>) \
-PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::msg::Imu>, filters::FilterBase<sensor_msgs::msg::Imu>) \
-PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::msg::Joy>, filters::FilterBase<sensor_msgs::msg::Joy>) \
-PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::msg::LaserScan>, filters::FilterBase<sensor_msgs::msg::LaserScan>) \
-PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::msg::MagneticField>, filters::FilterBase<sensor_msgs::msg::MagneticField>) \
-PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::msg::MultiEchoLaserScan>, filters::FilterBase<sensor_msgs::msg::MultiEchoLaserScan>) \
-PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::msg::NavSatFix>, filters::FilterBase<sensor_msgs::msg::NavSatFix>) \
-PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::msg::PointCloud>, filters::FilterBase<sensor_msgs::msg::PointCloud>) \
-PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::msg::PointCloud2>, filters::FilterBase<sensor_msgs::msg::PointCloud2>) \
-PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::msg::Range>, filters::FilterBase<sensor_msgs::msg::Range>) \
-PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::msg::RelativeHumidity>, filters::FilterBase<sensor_msgs::msg::RelativeHumidity>) \
-PLUGINLIB_EXPORT_CLASS(filter<sensor_msgs::msg::Temperature>, filters::FilterBase<sensor_msgs::msg::Temperature>)
+#define SENSOR_MSGS_SEQ \
+    (sensor_msgs::msg::CompressedImage) \
+    (sensor_msgs::msg::Image) \
+    (sensor_msgs::msg::Imu) \
+    (sensor_msgs::msg::Joy) \
+    (sensor_msgs::msg::LaserScan) \
+    (sensor_msgs::msg::MagneticField) \
+    (sensor_msgs::msg::MultiEchoLaserScan) \
+    (sensor_msgs::msg::NavSatFix) \
+    (sensor_msgs::msg::PointCloud) \
+    (sensor_msgs::msg::PointCloud2) \
+    (sensor_msgs::msg::Range) \
+    (sensor_msgs::msg::RelativeHumidity) \
+    (sensor_msgs::msg::Temperature)
+
+#define REGISTER_MSG_FILTER(r, filter, msg) \
+    PLUGINLIB_EXPORT_CLASS(filter<msg>, filters::FilterBase<msg>)
+
+#define REGISTER_MSG_FILTERS(filter, msg_seq) \
+    BOOST_PP_SEQ_FOR_EACH(REGISTER_MSG_FILTER, filter, msg_seq)
+
+#define REGISTER_ALL_MSG_FILTERS(filter) \
+    REGISTER_MSG_FILTERS(filter, SENSOR_MSGS_SEQ)

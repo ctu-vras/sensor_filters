@@ -26,11 +26,14 @@ set(DEPENDENCIES
 
 find_package(ament_cmake REQUIRED)
 
+find_package(Boost CONFIG)
+
 foreach (dependency IN ITEMS ${DEPENDENCIES})
     find_package(${dependency} REQUIRED)
 endforeach ()
 
 set(LIBRARY_TARGETS
+        ${boost_TARGETS}
         ${rclcpp_TARGETS}
         ${rclcpp_components_TARGETS}
         ${rclcpp_lifecycle_TARGETS}

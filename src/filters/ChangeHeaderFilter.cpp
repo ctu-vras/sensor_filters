@@ -74,4 +74,4 @@ namespace sensor_filters {
     };
 }
 
-REGISTER_ALL_MSG_FILTER(sensor_filters::ChangeHeader)
+REGISTER_ALL_MSG_FILTERS(sensor_filters::ChangeHeader)
