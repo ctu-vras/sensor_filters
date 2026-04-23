@@ -11,12 +11,14 @@ namespace sensor_filters {
     class PointCloud2FilterChainNode : public FilterChainNode<sensor_msgs::msg::PointCloud2> {
     public:
         explicit PointCloud2FilterChainNode(const rclcpp::NodeOptions& options) : FilterChainNode("pointcloud2_filter_chain", options) {
-            this->pct = std::make_unique<point_cloud_transport::PointCloudTransport>(this->shared_from_this());
+            this->nodeHandle =  std::make_shared<rclcpp::Node>(this->get_name());
+            this->pct = std::make_unique<point_cloud_transport::PointCloudTransport>(this->nodeHandle);
             PointCloud2FilterChainNode::configure();
         }
 
         [[deprecated]] explicit PointCloud2FilterChainNode() : FilterChainNode("pointcloud2_filter_chain") {
-            this->pct = std::make_unique<point_cloud_transport::PointCloudTransport>(this->shared_from_this());
+            this->nodeHandle =  std::make_shared<rclcpp::Node>(this->get_name());
+            this->pct = std::make_unique<point_cloud_transport::PointCloudTransport>(this->nodeHandle);
             PointCloud2FilterChainNode::configure();
         }
 
@@ -39,6 +41,7 @@ namespace sensor_filters {
         }
 
     private:
+	rclcpp::Node::SharedPtr nodeHandle;
         std::unique_ptr<point_cloud_transport::PointCloudTransport> pct;
         point_cloud_transport::Publisher pctPublisher;
         point_cloud_transport::Subscriber pctSubscriber;
