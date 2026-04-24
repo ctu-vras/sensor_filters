@@ -12,33 +12,6 @@
 #include <filters/filter_chain.hpp>
 #include <utility>
 
-#if defined(__GNUC__) || defined(__clang__)
-#include <cxxabi.h>
-#endif
-
-std::string demangle_cpp_type_name(const char * mangled_name)
-{
-#if defined(__GNUC__) || defined(__clang__)
-  int status = 0;
-  char * d = abi::__cxa_demangle(mangled_name, nullptr, nullptr, &status);
-  std::string result = (status == 0 && d) ? d : mangled_name;
-  std::free(d);
-  return result;
-#elif defined(_MSC_VER)
-  // MSVC's typeid().name() is already human-readable, but prepends 'class ' or 'struct '
-  std::string result = mangled_name;
-  if (result.size() > 6 && result.substr(0, 6) == "class ") {
-    result = result.substr(6);
-  }
-  if (result.size() > 7 && result.substr(0, 7) == "struct ") {
-    result = result.substr(7);
-  }
-  return result;
-#else
-  return mangled_name;
-#endif
-}
-
 namespace sensor_filters {
     template <typename T>
     class FilterChainBase {
@@ -58,6 +31,7 @@ namespace sensor_filters {
 
     public:
         FilterChainBase(
+            const std::string& messageType,
             std::string filterChainNamespace,
             const long inputQueueSize,
             const long outputQueueSize,
@@ -68,7 +42,7 @@ namespace sensor_filters {
             rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr loggingInterface
         ) : filterChainNamespace(std::move(filterChainNamespace)), inputQueueSize(inputQueueSize), outputQueueSize(outputQueueSize),
             usePtrMessages(usePtrMessages), baseInterface(std::move(baseInterface)), clockInterface(std::move(clockInterface)),
-            paramsInterface(std::move(paramsInterface)), loggingInterface(std::move(loggingInterface)), filterChain(demangle_cpp_type_name(typeid(T).name())) {}
+            paramsInterface(std::move(paramsInterface)), loggingInterface(std::move(loggingInterface)), filterChain(messageType) {}
 
         virtual ~FilterChainBase() = default;
 

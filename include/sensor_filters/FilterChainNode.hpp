@@ -19,9 +19,10 @@ namespace sensor_filters {
     class FilterChainNode : public rclcpp::Node, public Base {
     public:
         // TODO 2026-03-16 (solonovamax): support parameter callback
-        explicit FilterChainNode(const std::string& name, const rclcpp::NodeOptions& options) :
+        explicit FilterChainNode(const std::string& messageType, const std::string& name, const rclcpp::NodeOptions& options) :
             Node(name, options),
             Base(
+                messageType,
                 name,
                 this->declare_parameter("input_queue_size", 10),
                 this->declare_parameter("output_queue_size", 10),
@@ -33,9 +34,10 @@ namespace sensor_filters {
             ) {}
 
         //! use a composable node instead
-        [[deprecated]] explicit FilterChainNode(const std::string& name) :
+        [[deprecated]] explicit FilterChainNode(const std::string& messageType, const std::string& name) :
             Node(name),
             Base(
+                messageType,
                 name,
                 this->declare_parameter("input_queue_size", 10),
                 this->declare_parameter("output_queue_size", 10),
@@ -100,9 +102,10 @@ namespace sensor_filters {
     class LifecycleFilterChainNode : public rclcpp_lifecycle::LifecycleNode, public Base {
     public:
         // TODO 2026-03-16 (solonovamax): support parameter callback
-        explicit LifecycleFilterChainNode(const std::string& name, const rclcpp::NodeOptions& options) :
+        explicit LifecycleFilterChainNode(const std::string& messageType, const std::string& name, const rclcpp::NodeOptions& options) :
             LifecycleNode(name, options),
             Base(
+                messageType,
                 name,
                 this->declare_parameter("input_queue_size", 10),
                 this->declare_parameter("output_queue_size", 10),
@@ -114,9 +117,10 @@ namespace sensor_filters {
             ) {}
 
         //! use a composable node instead
-        [[deprecated]] explicit LifecycleFilterChainNode(const std::string& name) :
+        [[deprecated]] explicit LifecycleFilterChainNode(const std::string& messageType, const std::string& name) :
             LifecycleNode(name),
             Base(
+                messageType,
                 name,
                 this->declare_parameter("input_queue_size", 10),
                 this->declare_parameter("output_queue_size", 10),

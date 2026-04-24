@@ -10,12 +10,12 @@
 namespace sensor_filters {
     class ImageFilterChainNode : public FilterChainNode<sensor_msgs::msg::Image> {
     public:
-        explicit ImageFilterChainNode(const rclcpp::NodeOptions& options) : FilterChainNode("Image_filter_chain", options) {
+        explicit ImageFilterChainNode(const rclcpp::NodeOptions& options) : FilterChainNode("sensor_msgs::msg::Image", "Image_filter_chain", options) {
             this->it = std::make_unique<image_transport::ImageTransport>(this->shared_from_this());
             ImageFilterChainNode::configure();
         }
 
-        [[deprecated]] explicit ImageFilterChainNode() : FilterChainNode("Image_filter_chain") {
+        [[deprecated]] explicit ImageFilterChainNode() : FilterChainNode("sensor_msgs::msg::Image", "Image_filter_chain") {
             this->it = std::make_unique<image_transport::ImageTransport>(this->shared_from_this());
             ImageFilterChainNode::configure();
         }

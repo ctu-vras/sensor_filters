@@ -8,9 +8,9 @@
 namespace sensor_filters {
     class @CLASS_NAME@ : public LifecycleFilterChainNode<@TEMPLATE_ARGS@> {
     public:
-        explicit @CLASS_NAME@(const rclcpp::NodeOptions& options) : LifecycleFilterChainNode("@NODE_NAME@", options) {}
+        explicit @CLASS_NAME@(const rclcpp::NodeOptions& options) : LifecycleFilterChainNode("@MESSAGE_TYPE@", "@NODE_NAME@", options) {}
 
-        [[deprecated]] explicit @CLASS_NAME@(): LifecycleFilterChainNode("@NODE_NAME@") {}
+        [[deprecated]] explicit @CLASS_NAME@(): LifecycleFilterChainNode("@MESSAGE_TYPE@", "@NODE_NAME@") {}
     };
 }
 
