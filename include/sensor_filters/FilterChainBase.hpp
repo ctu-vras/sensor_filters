@@ -27,6 +27,7 @@ namespace sensor_filters {
         rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr loggingInterface;
 
         filters::FilterChain<T> filterChain;
+        std::string messageType;
         T msg;
 
     public:
@@ -42,14 +43,17 @@ namespace sensor_filters {
             rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr loggingInterface
         ) : filterChainNamespace(std::move(filterChainNamespace)), inputQueueSize(inputQueueSize), outputQueueSize(outputQueueSize),
             usePtrMessages(usePtrMessages), baseInterface(std::move(baseInterface)), clockInterface(std::move(clockInterface)),
-            paramsInterface(std::move(paramsInterface)), loggingInterface(std::move(loggingInterface)), filterChain(messageType) {}
+            paramsInterface(std::move(paramsInterface)), loggingInterface(std::move(loggingInterface)), filterChain(messageType),
+            messageType(messageType)
+        {
+        }
 
         virtual ~FilterChainBase() = default;
 
         virtual void configure() {
             if (!this->filterChain.configure(filterChainNamespace, loggingInterface, paramsInterface)) {
                 RCLCPP_ERROR_STREAM(loggingInterface->get_logger(), "Configuration of filter chain for "
-                                    << typeid(T).name() << " is invalid, the chain will not be run.");
+                                    << messageType << " is invalid, the chain will not be run.");
                 throw std::runtime_error("Filter configuration error");
             }
         }
