@@ -145,6 +145,9 @@ function(generate_filter_chain_source NODE_NAME)
     endif ()
 endfunction()
 
+add_library(${PROJECT_NAME}_node_helper SHARED src/node_helper.cpp)
+target_link_libraries(${PROJECT_NAME}_node_helper PUBLIC rclcpp::rclcpp)
+
 generate_filter_chain_source("compressed_image" HEADER_NAME "compressed_image" MESSAGE_TYPE "CompressedImage")
 generate_filter_chain_source("imu" HEADER_NAME "imu" MESSAGE_TYPE "Imu")
 generate_filter_chain_source("joy" HEADER_NAME "joy" MESSAGE_TYPE "Joy")
@@ -158,6 +161,7 @@ generate_filter_chain_source("relative_humidity" HEADER_NAME "relative_humidity"
 generate_filter_chain_source("temperature" HEADER_NAME "temperature" MESSAGE_TYPE "Temperature")
 add_filter_chain_node("image_filter_chain" "ImageFilterChainNode" src/ImageFilterChainNode.cpp)
 add_filter_chain_node("pointcloud2_filter_chain" "PointCloud2FilterChainNode" src/PointCloud2FilterChainNode.cpp)
+target_link_libraries(pointcloud2_filter_chain_component PRIVATE ${PROJECT_NAME}_node_helper)
 
 set(filters
         ChangeHeaderFilter
@@ -170,6 +174,12 @@ foreach (filter IN LISTS filters)
     target_link_libraries(${filter} PUBLIC ${LIBRARY_TARGETS})
     pluginlib_export_plugin_description_file(filters ${filter}.xml)
 endforeach ()
+
+install(TARGETS ${PROJECT_NAME}_node_helper
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
 
 install(TARGETS ${FILTER_LIBRARIES}
         EXPORT export_${PROJECT_NAME}
