@@ -15,22 +15,23 @@ namespace sensor_filters {
         bool configure() override {
             {
                 std::string frameIdParam;
-                if (this->getParam("frame_id_prefix", frameIdParam))
+                if (this->getParam("frame_id_prefix", frameIdParam) && !frameIdParam.empty())
                     this->newFrameIdPrefix = frameIdParam;
 
-                if (this->getParam("frame_id_suffix", frameIdParam))
+                if (this->getParam("frame_id_suffix", frameIdParam) && !frameIdParam.empty())
                     this->newFrameIdSuffix = frameIdParam;
 
-                if (this->getParam("frame_id", frameIdParam))
+                if (this->getParam("frame_id", frameIdParam, true, "?") && frameIdParam != "?")
                     this->newFrameId = frameIdParam;
             }
 
             {
-                double stampParam;
-                if (this->getParam("stamp_relative", stampParam))
+                const auto nan = std::numeric_limits<double>::quiet_NaN();
+                double stampParam {nan};
+                if (this->getParam("stamp_relative", stampParam, true, nan) && std::isfinite(stampParam))
                     this->newStampRel = rclcpp::Duration::from_seconds(stampParam);
 
-                if (this->getParam("stamp", stampParam)) {
+                if (this->getParam("stamp", stampParam, true, nan) && std::isfinite(stampParam)) {
                     const auto nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::duration<double>(stampParam));
                     this->newStampAbs = rclcpp::Time(nanos.count());
                 }

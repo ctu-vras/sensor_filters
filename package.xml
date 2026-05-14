@@ -37,6 +37,5 @@ SPDX-FileCopyrightText: Czech Technical University in Prague
 
   <export>
     <build_type>ament_cmake</build_type>
-    <filters plugin="${prefix}/ChangeHeaderFilter.xml" />
   </export>
 </package>

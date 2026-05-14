@@ -170,7 +170,7 @@ set(filters
 foreach (filter IN LISTS filters)
     list(APPEND FILTER_LIBRARIES ${filter})
 
-    add_library(${filter} src/filters/${filter}.cpp)
+    add_library(${filter} SHARED src/filters/${filter}.cpp)
     target_link_libraries(${filter} PUBLIC ${LIBRARY_TARGETS})
     pluginlib_export_plugin_description_file(filters ${filter}.xml)
 endforeach ()
