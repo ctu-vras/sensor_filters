@@ -9,26 +9,37 @@
  */
 
 #include <string>
-#include <filters/filter_chain.hpp>
 #include <utility>
 
+#include <filters/filter_chain.hpp>
+#include <rclcpp/node_interfaces/node_interfaces.hpp>
+#include <rclcpp/clock.hpp>
+#include <rclcpp/time.hpp>
+
 namespace sensor_filters {
+
+    using RequiredInterfaces = rclcpp::node_interfaces::NodeInterfaces<
+        rclcpp::node_interfaces::NodeBaseInterface,
+        rclcpp::node_interfaces::NodeParametersInterface,
+        rclcpp::node_interfaces::NodeLoggingInterface
+    >;
+
     template <typename T>
     class FilterChainBase {
+
     protected:
         std::string filterChainNamespace;
         size_t inputQueueSize = 10u;
         size_t outputQueueSize = 10u;
         bool usePtrMessages = true;
 
-        rclcpp::node_interfaces::NodeBaseInterface::SharedPtr baseInterface;
-        rclcpp::node_interfaces::NodeClockInterface::SharedPtr clockInterface;
-        rclcpp::node_interfaces::NodeParametersInterface::SharedPtr paramsInterface;
-        rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr loggingInterface;
+        RequiredInterfaces nodeInterfaces;
 
         filters::FilterChain<T> filterChain;
         std::string messageType;
         T msg;
+
+        rclcpp::Clock wallClock {RCL_SYSTEM_TIME};
 
     public:
         FilterChainBase(
@@ -37,13 +48,9 @@ namespace sensor_filters {
             const long inputQueueSize,
             const long outputQueueSize,
             const bool usePtrMessages,
-            rclcpp::node_interfaces::NodeBaseInterface::SharedPtr baseInterface,
-            rclcpp::node_interfaces::NodeClockInterface::SharedPtr clockInterface,
-            rclcpp::node_interfaces::NodeParametersInterface::SharedPtr paramsInterface,
-            rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr loggingInterface
+            RequiredInterfaces nodeInterfaces
         ) : filterChainNamespace(std::move(filterChainNamespace)), inputQueueSize(inputQueueSize), outputQueueSize(outputQueueSize),
-            usePtrMessages(usePtrMessages), baseInterface(std::move(baseInterface)), clockInterface(std::move(clockInterface)),
-            paramsInterface(std::move(paramsInterface)), loggingInterface(std::move(loggingInterface)), filterChain(messageType),
+            usePtrMessages(usePtrMessages), nodeInterfaces(std::move(nodeInterfaces)), filterChain(messageType),
             messageType(messageType)
         {
         }
@@ -51,6 +58,8 @@ namespace sensor_filters {
         virtual ~FilterChainBase() = default;
 
         virtual void configure() {
+            const auto loggingInterface = this->nodeInterfaces.get_node_logging_interface();
+            const auto paramsInterface = this->nodeInterfaces.get_node_parameters_interface();
             if (!this->filterChain.configure(filterChainNamespace, loggingInterface, paramsInterface)) {
                 RCLCPP_ERROR_STREAM(loggingInterface->get_logger(), "Configuration of filter chain for "
                                     << messageType << " is invalid, the chain will not be run.");
@@ -98,14 +107,15 @@ namespace sensor_filters {
         }
 
         virtual bool filter(const T& msgIn, T& msgOut) {
-            const auto clock = clockInterface->get_clock();
-            const auto start = clock->now();
+            const auto loggingInterface = this->nodeInterfaces.get_node_logging_interface();
+            const auto start = this->wallClock.now();
             if (!this->filterChain.update(msgIn, msgOut)) {
-                RCLCPP_ERROR_THROTTLE(loggingInterface->get_logger(), *clock, 1000, "Filtering data from time %i.%i failed.",
+                RCLCPP_ERROR_THROTTLE(loggingInterface->get_logger(), this->wallClock, 1000, "Filtering data from time %i.%09i failed.",
                                       msgIn.header.stamp.sec, msgIn.header.stamp.nanosec);
                 return false;
             }
-            RCLCPP_DEBUG_STREAM(loggingInterface->get_logger(), "Filtering took " << (clock->now() - start).seconds() << " s.");
+            const auto end = this->wallClock.now();
+            RCLCPP_DEBUG(loggingInterface->get_logger(), "Filtering took %0.09f s.", (end - start).seconds());
             return true;
         }
     };

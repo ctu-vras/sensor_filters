@@ -27,10 +27,7 @@ namespace sensor_filters {
                 this->declare_parameter("input_queue_size", 10),
                 this->declare_parameter("output_queue_size", 10),
                 false,
-                this->get_node_base_interface(),
-                this->get_node_clock_interface(),
-                this->get_node_parameters_interface(),
-                this->get_node_logging_interface()
+                *this
             ) {}
 
         //! use a composable node instead
@@ -42,10 +39,7 @@ namespace sensor_filters {
                 this->declare_parameter("input_queue_size", 10),
                 this->declare_parameter("output_queue_size", 10),
                 false,
-                this->get_node_base_interface(),
-                this->get_node_clock_interface(),
-                this->get_node_parameters_interface(),
-                this->get_node_logging_interface()
+                *this
             ) {}
 
         void configure() override {
@@ -110,10 +104,7 @@ namespace sensor_filters {
                 this->declare_parameter("input_queue_size", 10),
                 this->declare_parameter("output_queue_size", 10),
                 false,
-                this->get_node_base_interface(),
-                this->get_node_clock_interface(),
-                this->get_node_parameters_interface(),
-                this->get_node_logging_interface()
+                *this
             ) {}
 
         //! use a composable node instead
@@ -125,21 +116,18 @@ namespace sensor_filters {
                 this->declare_parameter("input_queue_size", 10),
                 this->declare_parameter("output_queue_size", 10),
                 false,
-                this->get_node_base_interface(),
-                this->get_node_clock_interface(),
-                this->get_node_parameters_interface(),
-                this->get_node_logging_interface()
+                *this
             ) {}
 
         CallbackReturn on_configure(const rclcpp_lifecycle::State&) override {
-            advertise();
-            subscribe();
-
             try {
                 Base::configure();
             } catch (const std::runtime_error&) {
                 return CallbackReturn::ERROR;
             }
+
+            advertise();
+            subscribe();
 
             return CallbackReturn::SUCCESS;
         }
@@ -164,19 +152,6 @@ namespace sensor_filters {
             // if other transitions are ever changed so that they can error, then this needs to be updated.
 
             this->filterChain.clear();
-
-            return CallbackReturn::SUCCESS;
-        }
-
-        CallbackReturn on_activate(const rclcpp_lifecycle::State& state) override {
-            const auto result = LifecycleNode::on_activate(state);
-
-            return result;
-        }
-
-        CallbackReturn on_deactivate(const rclcpp_lifecycle::State& state) override {
-            if (const auto result = LifecycleNode::on_deactivate(state); result != CallbackReturn::SUCCESS)
-                return result;
 
             return CallbackReturn::SUCCESS;
         }
@@ -209,7 +184,7 @@ namespace sensor_filters {
         }
 
         void publishUnique(typename T::UniquePtr& msg) override {
-            if (!this->outputPublisher->is_activated())
+            if (!this->isActive())
                 return;
 
             this->outputPublisher->publish(std::move(msg));
@@ -220,7 +195,7 @@ namespace sensor_filters {
         }
 
         void publishReference(const T& msg) override {
-            if (!this->outputPublisher->is_activated())
+            if (!this->isActive())
                 return;
 
             this->outputPublisher->publish(msg);

@@ -7,24 +7,34 @@
 #include <image_transport/image_transport.hpp>
 #include <sensor_msgs/msg/image.hpp>
 
+#ifdef IMAGE_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE
 #include "NodeHelper.hpp"
+#endif
 
 namespace sensor_filters {
     class ImageFilterChainNode : public FilterChainNode<sensor_msgs::msg::Image> {
     public:
         explicit ImageFilterChainNode(const rclcpp::NodeOptions& options) : FilterChainNode("sensor_msgs::msg::Image", "image_filter_chain", options) {
-            this->nodePtr = get_node_shared_ptr_from_raw_ptr(this);
             // image_transport does not declare the parameter
             this->declare_parameter("image_transport", "raw");
+#ifdef IMAGE_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE
+            this->nodePtr = get_node_shared_ptr_from_raw_ptr(this);
             this->it = std::make_unique<image_transport::ImageTransport>(this->nodePtr);
+#else
+            this->it = std::make_unique<image_transport::ImageTransport>(*this);
+#endif
             ImageFilterChainNode::configure();
         }
 
         [[deprecated]] explicit ImageFilterChainNode() : FilterChainNode("sensor_msgs::msg::Image", "image_filter_chain") {
-            this->nodePtr = get_node_shared_ptr_from_raw_ptr(this);
             // image_transport does not declare the parameter
             this->declare_parameter("image_transport", "raw");
+#ifdef IMAGE_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE
+            this->nodePtr = get_node_shared_ptr_from_raw_ptr(this);
             this->it = std::make_unique<image_transport::ImageTransport>(this->nodePtr);
+#else
+            this->it = std::make_unique<image_transport::ImageTransport>(*this);
+#endif
             ImageFilterChainNode::configure();
         }
 
@@ -48,7 +58,9 @@ namespace sensor_filters {
         }
 
     private:
+#ifdef IMAGE_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE
         rclcpp::Node::SharedPtr nodePtr;
+#endif
         std::unique_ptr<image_transport::ImageTransport> it;
         image_transport::Publisher itPublisher;
         image_transport::Subscriber itSubscriber;

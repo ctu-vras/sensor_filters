@@ -8,20 +8,30 @@
 #include <point_cloud_transport/point_cloud_transport.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
+#ifdef POINT_CLOUD_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE
 #include "NodeHelper.hpp"
+#endif
 
 namespace sensor_filters {
     class PointCloud2FilterChainNode : public FilterChainNode<sensor_msgs::msg::PointCloud2> {
     public:
         explicit PointCloud2FilterChainNode(const rclcpp::NodeOptions& options) : FilterChainNode("sensor_msgs::msg::PointCloud2", "pointcloud2_filter_chain", options) {
+#ifdef POINT_CLOUD_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE
             this->nodePtr = get_node_shared_ptr_from_raw_ptr(this);
             this->pct = std::make_unique<point_cloud_transport::PointCloudTransport>(this->nodePtr);
+#else
+            this->pct = std::make_unique<point_cloud_transport::PointCloudTransport>(*this);
+#endif
             PointCloud2FilterChainNode::configure();
         }
 
         [[deprecated]] explicit PointCloud2FilterChainNode() : FilterChainNode("sensor_msgs::msg::PointCloud2", "pointcloud2_filter_chain") {
+#ifdef POINT_CLOUD_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE
             this->nodePtr = get_node_shared_ptr_from_raw_ptr(this);
             this->pct = std::make_unique<point_cloud_transport::PointCloudTransport>(this->nodePtr);
+#else
+            this->pct = std::make_unique<point_cloud_transport::PointCloudTransport>(*this);
+#endif
             PointCloud2FilterChainNode::configure();
         }
 
@@ -45,7 +55,9 @@ namespace sensor_filters {
         }
 
     private:
+#ifdef POINT_CLOUD_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE
 	    rclcpp::Node::SharedPtr nodePtr;
+#endif
         std::unique_ptr<point_cloud_transport::PointCloudTransport> pct;
         point_cloud_transport::Publisher pctPublisher;
         point_cloud_transport::Subscriber pctSubscriber;

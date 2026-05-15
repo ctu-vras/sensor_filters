@@ -59,6 +59,13 @@ function(add_filter_chain_node TARGET_NAME CLASS_NAME FILENAME)
       $<INSTALL_INTERFACE:include>
     )
 
+    if(image_transport_VERSION VERSION_LESS 6.4.0)
+        target_compile_definitions("${TARGET_NAME}_component" PRIVATE IMAGE_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE)
+    endif()
+    if(point_cloud_transport_VERSION VERSION_LESS 5.2.0)
+        target_compile_definitions("${TARGET_NAME}_component" PRIVATE POINT_CLOUD_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE)
+    endif()
+
     install(TARGETS "${TARGET_NAME}_component"
             ARCHIVE DESTINATION lib
             LIBRARY DESTINATION lib
