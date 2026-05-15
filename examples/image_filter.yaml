@@ -5,11 +5,14 @@
 # image_transport to subscribe and publish.
 # Author: Martin Pecka
 
-image_transport: compressed
-output_queue_size: 100
-image_filter_chain:
-  # This filter will subtract 25 ms from each scan timestamp, e.g. to account for transport delay.
-  - name: delay
-    type: sensor_filters/ChangeHeader/Image
-    params:
-      stamp_relative: -0.025
+/**:
+  ros__parameters:
+    image_transport: compressed
+    output_queue_size: 100
+    image_filter_chain:
+      filter1:
+        # This filter will subtract 25 ms from each image timestamp, e.g. to account for transport delay.
+        name: delay
+        type: sensor_filters/ChangeHeader_Image
+        params:
+          stamp_relative: -0.025

@@ -7,9 +7,26 @@ timestamps.
 -->
 
 <launch>
-    <node pkg="sensor_filters" type="laserscan_filter_chain" output="screen" name="laser_filter">
-        <remap from="~input" to="base_scan" />
-        <remap from="~output" to="base_scan_filtered" />
-        <rosparam command="load" file="$(dirname)/filter.yaml" />
+    <arg name="publish_sample_data" default="false" />
+
+    <node pkg="sensor_filters" exec="scan_filter_chain" output="screen" name="laser_filter">
+        <remap from="input" to="base_scan" />
+        <remap from="output" to="base_scan_filtered" />
+        <param from="$(dirname)/filter.yaml" />
     </node>
+
+    <group if="$(var publish_sample_data)">
+        <executable name="pub" cmd="ros2 topic pub /base_scan sensor_msgs/LaserScan '{
+                header: {stamp: {sec: 10, nanosec: 0}, frame_id: &quot;scan&quot;},
+                angle_min: -1.0,
+                angle_max: 1.0,
+                angle_increment: 1.0,
+                time_increment: 0.001,
+                scan_time: 0.005,
+                range_min: 0.0,
+                range_max: 10.0,
+                ranges: [0.0, 1.0, 2.0],
+                intensities: [0.0, 1.0, 2.0],
+                }'"/>
+    </group>
 </launch>

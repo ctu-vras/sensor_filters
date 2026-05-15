@@ -7,9 +7,35 @@ point_cloud_transport to subscribe and publish.
 -->
 
 <launch>
+    <arg name="publish_sample_data" default="false" />
+
     <node pkg="sensor_filters" exec="pointcloud2_filter_chain" output="screen" name="cloud_filter">
         <remap from="input" to="cloud" />
         <remap from="output" to="cloud_filtered" />
         <param from="$(dirname)/pointcloud2_filter.yaml" />
     </node>
+
+    <group if="$(var publish_sample_data)">
+        <executable name="pub" cmd="ros2 topic pub /cloud_raw sensor_msgs/PointCloud2 '{
+            header: {stamp: {sec: 10, nanosec: 0}, frame_id: &quot;map&quot;},
+            height: 1,
+            width: 1,
+            fields: [
+                {name: &quot;x&quot;, offset: 0, datatype: 7, count: 1},
+                {name: &quot;y&quot;, offset: 4, datatype: 7, count: 1},
+                {name: &quot;z&quot;, offset: 8, datatype: 7, count: 1},
+            ],
+            is_bigendian: false,
+            point_step: 12,
+            row_step: 12,
+            data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            is_dense: false,
+            }'"/>
+        <node name="encode" pkg="point_cloud_transport" exec="republish">
+            <param name="in_transport" value="raw" />
+            <param name="out_transport" value="draco" />
+            <remap from="in" to="/cloud_raw" />
+            <remap from="out/draco" to="/cloud/draco" />
+        </node>
+    </group>
 </launch>
