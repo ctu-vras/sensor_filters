@@ -8,7 +8,7 @@
 #include <point_cloud_transport/point_cloud_transport.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
-#include "node_helper.hpp"
+#include "NodeHelper.hpp"
 
 namespace sensor_filters {
     class PointCloud2FilterChainNode : public FilterChainNode<sensor_msgs::msg::PointCloud2> {

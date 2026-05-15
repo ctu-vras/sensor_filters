@@ -7,7 +7,7 @@
 #include <image_transport/image_transport.hpp>
 #include <sensor_msgs/msg/image.hpp>
 
-#include "node_helper.hpp"
+#include "NodeHelper.hpp"
 
 namespace sensor_filters {
     class ImageFilterChainNode : public FilterChainNode<sensor_msgs::msg::Image> {

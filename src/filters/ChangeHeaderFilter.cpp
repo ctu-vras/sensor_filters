@@ -6,8 +6,6 @@
 #include <filters/filter_chain.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include "include_all_msgs.hpp"
-
 namespace sensor_filters {
     template <typename T>
     class ChangeHeader : public filters::FilterBase<T> {
@@ -75,4 +73,5 @@ namespace sensor_filters {
     };
 }
 
-REGISTER_ALL_MSG_FILTERS(sensor_filters::ChangeHeader)
+#include <sensor_filters/RegisterFilter.hpp>
+REGISTER_UNIVERSAL_SENSOR_MSGS_FILTER(sensor_filters::ChangeHeader)

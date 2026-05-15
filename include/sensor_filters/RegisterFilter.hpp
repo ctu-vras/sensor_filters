@@ -40,11 +40,14 @@
     (sensor_msgs::msg::RelativeHumidity) \
     (sensor_msgs::msg::Temperature)
 
-#define REGISTER_MSG_FILTER(r, filter, msg) \
+#define REGISTER_TEMPLATED_FILTER_FOR_MSG(filter, msg) \
     PLUGINLIB_EXPORT_CLASS(filter<msg>, filters::FilterBase<msg>)
 
-#define REGISTER_MSG_FILTERS(filter, msg_seq) \
-    BOOST_PP_SEQ_FOR_EACH(REGISTER_MSG_FILTER, filter, msg_seq)
+#define REGISTER_TEMPLATED_FILTER_FOR_MSG_BOOST_PP_SEQ_HELPER(r, filter, msg) \
+    REGISTER_TEMPLATED_FILTER_FOR_MSG(filter, msg)
 
-#define REGISTER_ALL_MSG_FILTERS(filter) \
-    REGISTER_MSG_FILTERS(filter, SENSOR_MSGS_SEQ)
+#define REGISTER_TEMPLATED_FILTER_FOR_MSGS(filter, msg_seq) \
+    BOOST_PP_SEQ_FOR_EACH(REGISTER_TEMPLATED_FILTER_FOR_MSG_BOOST_PP_SEQ_HELPER, filter, msg_seq)
+
+#define REGISTER_UNIVERSAL_SENSOR_MSGS_FILTER(filter) \
+    REGISTER_TEMPLATED_FILTER_FOR_MSGS(filter, SENSOR_MSGS_SEQ)

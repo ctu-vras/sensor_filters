@@ -16,9 +16,10 @@ set(DEPENDENCIES
         rclcpp
         rclcpp_components
         rclcpp_lifecycle
-        lifecycle_msgs
         filters
         sensor_msgs
+)
+set(BUILD_ONLY_DEPENDENCIES
         image_transport
         point_cloud_transport
         backward_ros
@@ -32,32 +33,31 @@ foreach (dependency IN ITEMS ${DEPENDENCIES})
     find_package(${dependency} REQUIRED)
 endforeach ()
 
-set(LIBRARY_TARGETS
-        ${boost_TARGETS}
-        ${rclcpp_TARGETS}
-        ${rclcpp_components_TARGETS}
-        ${rclcpp_lifecycle_TARGETS}
-        ${lifecycle_msgs_TARGETS}
-        ${filters_TARGETS}
-        ${sensor_msgs_TARGETS}
-        ${image_transport_TARGETS}
-        ${point_cloud_transport_TARGETS}
-        ${backward_ros_TARGETS}
-)
+foreach (dependency IN ITEMS ${BUILD_ONLY_DEPENDENCIES})
+    find_package(${dependency} REQUIRED)
+endforeach ()
 
-include_directories(include include/${PROJECT_NAME})
+set(LIBRARY_TARGETS
+        Boost::boost
+        rclcpp::rclcpp
+        rclcpp_components::component
+        rclcpp_lifecycle::rclcpp_lifecycle
+        filters::filter_chain
+        image_transport::image_transport
+        point_cloud_transport::point_cloud_transport
+        ${sensor_msgs_TARGETS}
+)
 
 function(add_filter_chain_node TARGET_NAME CLASS_NAME FILENAME)
     list(APPEND NODE_TARGETS ${TARGET_NAME})
 
     add_library("${TARGET_NAME}_component" SHARED "${FILENAME}")
     rclcpp_components_register_node("${TARGET_NAME}_component" PLUGIN "sensor_filters::${CLASS_NAME}" EXECUTABLE ${TARGET_NAME})
-    #add_executable(${TARGET_NAME} "${FILENAME}")
-    target_link_libraries("${TARGET_NAME}_component" PUBLIC ${LIBRARY_TARGETS})
-
-    #install(TARGETS ${TARGET_NAME}
-    #        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-    #)
+    target_link_libraries("${TARGET_NAME}_component" PRIVATE ${LIBRARY_TARGETS})
+    target_include_directories(${TARGET_NAME}_component PRIVATE
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:include>
+    )
 
     install(TARGETS "${TARGET_NAME}_component"
             ARCHIVE DESTINATION lib
@@ -145,7 +145,7 @@ function(generate_filter_chain_source NODE_NAME)
     endif ()
 endfunction()
 
-add_library(${PROJECT_NAME}_node_helper SHARED src/node_helper.cpp)
+add_library(${PROJECT_NAME}_node_helper SHARED src/NodeHelper.cpp)
 target_link_libraries(${PROJECT_NAME}_node_helper PUBLIC rclcpp::rclcpp)
 
 generate_filter_chain_source("compressed_image" HEADER_NAME "compressed_image" MESSAGE_TYPE "CompressedImage")
@@ -172,7 +172,11 @@ foreach (filter IN LISTS filters)
     list(APPEND FILTER_LIBRARIES ${filter})
 
     add_library(${filter} SHARED src/filters/${filter}.cpp)
-    target_link_libraries(${filter} PUBLIC ${LIBRARY_TARGETS})
+    target_link_libraries(${filter} PRIVATE ${LIBRARY_TARGETS})
+    target_include_directories(${filter} PRIVATE
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:include>
+    )
     pluginlib_export_plugin_description_file(filters ${filter}.xml)
 endforeach ()
 
@@ -227,8 +231,7 @@ install(
 #    roslint_add_test()
 #endif ()
 
-ament_export_include_directories(include include/${PROJECT_NAME})
+ament_export_include_directories(include)
 ament_export_dependencies(${DEPENDENCIES})
-ament_export_libraries(${FILTER_LIBRARIES})
 ament_export_targets(export_${PROJECT_NAME})
 ament_package()
