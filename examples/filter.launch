@@ -8,8 +8,9 @@ timestamps.
 
 <launch>
     <arg name="publish_sample_data" default="false" />
+    <arg name="log_level" default="INFO" />
 
-    <node pkg="sensor_filters" exec="scan_filter_chain" output="screen" name="laser_filter">
+    <node pkg="sensor_filters" exec="scan_filter_chain" output="screen" name="laser_filter" args="--ros-args --log-level $(var log_level)">
         <remap from="input" to="base_scan" />
         <remap from="output" to="base_scan_filtered" />
         <param from="$(dirname)/filter.yaml" />

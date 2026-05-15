@@ -8,8 +8,9 @@ image_transport to subscribe and publish.
 
 <launch>
     <arg name="publish_sample_data" default="false" />
+    <arg name="log_level" default="INFO" />
 
-    <node pkg="sensor_filters" exec="image_filter_chain" output="screen" name="image_filter">
+    <node pkg="sensor_filters" exec="image_filter_chain" output="screen" name="image_filter" args="--ros-args --log-level $(var log_level)">
         <remap from="input" to="image" />
         <remap from="output" to="image_filtered" />
         <param from="$(dirname)/image_filter.yaml" />
