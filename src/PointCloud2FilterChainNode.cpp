@@ -25,16 +25,6 @@ namespace sensor_filters {
             PointCloud2FilterChainNode::configure();
         }
 
-        [[deprecated]] explicit PointCloud2FilterChainNode() : FilterChainNode("sensor_msgs::msg::PointCloud2", "pointcloud2_filter_chain") {
-#ifdef POINT_CLOUD_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE
-            this->nodePtr = get_node_shared_ptr_from_raw_ptr(this);
-            this->pct = std::make_unique<point_cloud_transport::PointCloudTransport>(this->nodePtr);
-#else
-            this->pct = std::make_unique<point_cloud_transport::PointCloudTransport>(*this);
-#endif
-            PointCloud2FilterChainNode::configure();
-        }
-
     protected:
         void advertise() override {
             this->pctPublisher = this->pct->advertise(

@@ -30,18 +30,6 @@ namespace sensor_filters {
                 *this
             ) {}
 
-        //! use a composable node instead
-        [[deprecated]] explicit FilterChainNode(const std::string& messageType, const std::string& name) :
-            Node(name),
-            Base(
-                messageType,
-                name,
-                this->declare_parameter("input_queue_size", 10),
-                this->declare_parameter("output_queue_size", 10),
-                false,
-                *this
-            ) {}
-
         void configure() override {
             Base::configure();
 
@@ -98,18 +86,6 @@ namespace sensor_filters {
         // TODO 2026-03-16 (solonovamax): support parameter callback
         explicit LifecycleFilterChainNode(const std::string& messageType, const std::string& name, const rclcpp::NodeOptions& options) :
             LifecycleNode(name, options),
-            Base(
-                messageType,
-                name,
-                this->declare_parameter("input_queue_size", 10),
-                this->declare_parameter("output_queue_size", 10),
-                false,
-                *this
-            ) {}
-
-        //! use a composable node instead
-        [[deprecated]] explicit LifecycleFilterChainNode(const std::string& messageType, const std::string& name) :
-            LifecycleNode(name),
             Base(
                 messageType,
                 name,
@@ -206,20 +182,4 @@ namespace sensor_filters {
         std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<T>> outputPublisher;
     };
 
-    //! this method is deprecated, and instead a composable node should be used
-    template <typename T, typename Base = FilterChainBase<T>>
-    [[deprecated]] void spinFilterChain(const std::string& name, const int argc, char** argv) {
-        rclcpp::init(argc, argv);
-        const auto node = std::make_shared<FilterChainNode<T, Base>>(name);
-        node->configure();
-        rclcpp::spin(node);
-    }
-
-    //! this method is deprecated, and instead a composable node should be used
-    template <typename T, typename Base = FilterChainBase<T>>
-    [[deprecated]] void spinLifecycleFilterChain(const std::string& name, const int argc, char** argv) {
-        rclcpp::init(argc, argv);
-        const auto node = std::make_shared<LifecycleFilterChainNode<T, Base>>(name);
-        rclcpp::spin(node);
-    }
 }

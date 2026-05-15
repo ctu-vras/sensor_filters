@@ -26,18 +26,6 @@ namespace sensor_filters {
             ImageFilterChainNode::configure();
         }
 
-        [[deprecated]] explicit ImageFilterChainNode() : FilterChainNode("sensor_msgs::msg::Image", "image_filter_chain") {
-            // image_transport does not declare the parameter
-            this->declare_parameter("image_transport", "raw");
-#ifdef IMAGE_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE
-            this->nodePtr = get_node_shared_ptr_from_raw_ptr(this);
-            this->it = std::make_unique<image_transport::ImageTransport>(this->nodePtr);
-#else
-            this->it = std::make_unique<image_transport::ImageTransport>(*this);
-#endif
-            ImageFilterChainNode::configure();
-        }
-
     protected:
         void advertise() override {
             this->itPublisher = this->it->advertise(

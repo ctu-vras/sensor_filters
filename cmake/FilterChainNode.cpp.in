@@ -11,10 +11,6 @@ namespace sensor_filters {
         explicit @CLASS_NAME@(const rclcpp::NodeOptions& options) : FilterChainNode("@MESSAGE_TYPE@", "@NODE_NAME@", options) {
             @CLASS_NAME@::configure();
         }
-
-        [[deprecated]] explicit @CLASS_NAME@(): FilterChainNode("@MESSAGE_TYPE@", "@NODE_NAME@") {
-            @CLASS_NAME@::configure();
-        }
     };
 }
 
