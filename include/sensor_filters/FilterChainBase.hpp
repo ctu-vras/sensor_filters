@@ -29,8 +29,10 @@ namespace sensor_filters {
 
     protected:
         std::string filterChainNamespace;
-        size_t inputQueueSize = 10u;
-        size_t outputQueueSize = 10u;
+        size_t defaultInputQueueSize;
+        size_t inputQueueSize;
+        size_t defaultOutputQueueSize;
+        size_t outputQueueSize;
         bool usePtrMessages = true;
 
         RequiredInterfaces nodeInterfaces;
@@ -43,16 +45,23 @@ namespace sensor_filters {
 
     public:
         FilterChainBase(
+            RequiredInterfaces nodeInterfaces,
             const std::string& messageType,
             std::string filterChainNamespace,
-            const long inputQueueSize,
-            const long outputQueueSize,
             const bool usePtrMessages,
-            RequiredInterfaces nodeInterfaces
-        ) : filterChainNamespace(std::move(filterChainNamespace)), inputQueueSize(inputQueueSize), outputQueueSize(outputQueueSize),
+            const size_t defaultInputQueueSize = 10u,
+            const size_t defaultOutputQueueSize = 10u
+        ) : filterChainNamespace(std::move(filterChainNamespace)),
+            defaultInputQueueSize(defaultInputQueueSize), inputQueueSize(defaultInputQueueSize),
+            defaultOutputQueueSize(defaultOutputQueueSize), outputQueueSize(defaultOutputQueueSize),
             usePtrMessages(usePtrMessages), nodeInterfaces(std::move(nodeInterfaces)), filterChain(messageType),
             messageType(messageType)
         {
+            const auto params = this->nodeInterfaces.get_node_parameters_interface();
+            params->declare_parameter(
+                "input_queue_size", rclcpp::ParameterValue(static_cast<int64_t>(this->defaultInputQueueSize)));
+            params->declare_parameter(
+                "output_queue_size", rclcpp::ParameterValue(static_cast<int64_t>(this->defaultOutputQueueSize)));
         }
 
         virtual ~FilterChainBase() = default;
@@ -60,6 +69,10 @@ namespace sensor_filters {
         virtual void configure() {
             const auto loggingInterface = this->nodeInterfaces.get_node_logging_interface();
             const auto paramsInterface = this->nodeInterfaces.get_node_parameters_interface();
+
+            this->inputQueueSize = paramsInterface->get_parameter("input_queue_size").as_int();
+            this->outputQueueSize = paramsInterface->get_parameter("output_queue_size").as_int();
+
             if (!this->filterChain.configure(filterChainNamespace, loggingInterface, paramsInterface)) {
                 RCLCPP_ERROR_STREAM(loggingInterface->get_logger(), "Configuration of filter chain for "
                                     << messageType << " is invalid, the chain will not be run.");

@@ -20,15 +20,9 @@ namespace sensor_filters {
     public:
         // TODO 2026-03-16 (solonovamax): support parameter callback
         explicit FilterChainNode(const std::string& messageType, const std::string& name, const rclcpp::NodeOptions& options) :
-            Node(name, options),
-            Base(
-                messageType,
-                name,
-                this->declare_parameter("input_queue_size", 10),
-                this->declare_parameter("output_queue_size", 10),
-                false,
-                *this
-            ) {}
+            Node(name, options), Base(*this, messageType, name, false)
+        {
+        }
 
         void configure() override {
             Base::configure();
@@ -85,15 +79,9 @@ namespace sensor_filters {
     public:
         // TODO 2026-03-16 (solonovamax): support parameter callback
         explicit LifecycleFilterChainNode(const std::string& messageType, const std::string& name, const rclcpp::NodeOptions& options) :
-            LifecycleNode(name, options),
-            Base(
-                messageType,
-                name,
-                this->declare_parameter("input_queue_size", 10),
-                this->declare_parameter("output_queue_size", 10),
-                false,
-                *this
-            ) {}
+            LifecycleNode(name, options), Base(*this, messageType, name, false)
+        {
+        }
 
         CallbackReturn on_configure(const rclcpp_lifecycle::State&) override {
             try {
