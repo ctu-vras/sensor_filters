@@ -15,7 +15,12 @@
 namespace sensor_filters {
     class PointCloud2FilterChainNode : public FilterChainNode<sensor_msgs::msg::PointCloud2> {
     public:
-        explicit PointCloud2FilterChainNode(const rclcpp::NodeOptions& options) : FilterChainNode("sensor_msgs::msg::PointCloud2", "pointcloud2_filter_chain", options) {
+        explicit PointCloud2FilterChainNode(
+            const rclcpp::NodeOptions& options,
+            const FilterChainOptions& defaultChainOptions = {
+                10U, 10U, MessagePassingType::SHARED_PTR, MessagePassingType::SHARED_PTR
+            })
+            : FilterChainNode("sensor_msgs::msg::PointCloud2", "pointcloud2_filter_chain", options, defaultChainOptions) {
 #ifdef POINT_CLOUD_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE
             this->nodePtr = get_node_shared_ptr_from_raw_ptr(this);
             this->pct = std::make_unique<point_cloud_transport::PointCloudTransport>(this->nodePtr);
@@ -26,21 +31,39 @@ namespace sensor_filters {
         }
 
     protected:
+        bool validateSubscriptionType() const override
+        {
+            return this->options.subscriptionType == MessagePassingType::SHARED_PTR;
+        }
+
+        bool validatePublicationType() const override
+        {
+            return this->options.publicationType != MessagePassingType::UNIQUE_PTR;
+        }
+
         void advertise() override {
             this->pctPublisher = this->pct->advertise(
-                this->get_node_topics_interface()->resolve_topic_name("output"), this->outputQueueSize);
+                this->get_node_topics_interface()->resolve_topic_name("output"), this->options.outputQueueSize);
         }
 
         void subscribe() override {
             this->pctSubscriber = this->pct->subscribe(
-                this->get_node_topics_interface()->resolve_topic_name("input"), this->inputQueueSize,
+                this->get_node_topics_interface()->resolve_topic_name("input"), this->options.inputQueueSize,
                 [this](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg) {
                     PointCloud2FilterChainNode::callbackShared(msg);
                 }
             );
         }
 
-        void publishShared(const typename sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg) override {
+        void publishUnique(sensor_msgs::msg::PointCloud2::UniquePtr) override {
+            throw std::runtime_error("PointCloud2FilterChainNode does not support unique_ptr publications");
+        }
+
+        void publishShared(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg) override {
+            this->pctPublisher.publish(msg);
+        }
+
+        void publishReference(const sensor_msgs::msg::PointCloud2& msg) override {
             this->pctPublisher.publish(msg);
         }
 

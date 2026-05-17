@@ -19,8 +19,9 @@ namespace sensor_filters {
     class FilterChainNode : public rclcpp::Node, public Base {
     public:
         // TODO 2026-03-16 (solonovamax): support parameter callback
-        explicit FilterChainNode(const std::string& messageType, const std::string& name, const rclcpp::NodeOptions& options) :
-            Node(name, options), Base(*this, messageType, name, false)
+        explicit FilterChainNode(const std::string& messageType, const std::string& name,
+            const rclcpp::NodeOptions& options, const FilterChainOptions& defaultChainOptions = {}) :
+            Node(name, options), Base(*this, messageType, name, defaultChainOptions)
         {
         }
 
@@ -31,25 +32,47 @@ namespace sensor_filters {
             subscribe();
         }
 
+        bool validatePublicationType() const override {
+            return this->options.publicationType != MessagePassingType::SHARED_PTR;
+        }
+
         void advertise() override {
-            this->outputPublisher = create_publisher<T>("output", this->outputQueueSize);
+            this->outputPublisher = create_publisher<T>("output", this->options.outputQueueSize);
         }
 
         void subscribe() override {
-            if (this->usePtrMessages) {
-                this->inputSubscriber = create_subscription<T>(
-                    "input", this->inputQueueSize,
-                    [this](const typename T::UniquePtr& msg) {
-                        FilterChainBase<T>::callbackUnique(msg);
-                    }
-                );
-            } else {
-                this->inputSubscriber = create_subscription<T>(
-                    "input", this->inputQueueSize,
-                    [this](const T& msg) {
-                        FilterChainBase<T>::callbackReference(msg);
-                    }
-                );
+            switch (this->options.subscriptionType) {
+                case MessagePassingType::UNIQUE_PTR:
+                {
+                    this->inputSubscriber = create_subscription<T>(
+                        "input", this->options.inputQueueSize,
+                        [this](typename T::UniquePtr msg) {
+                            FilterChainBase<T>::callbackUnique(std::move(msg));
+                        }
+                    );
+                    break;
+                }
+                case MessagePassingType::SHARED_PTR:
+                {
+                    this->inputSubscriber = create_subscription<T>(
+                        "input", this->options.inputQueueSize,
+                        [this](const typename T::ConstSharedPtr& msg) {
+                            FilterChainBase<T>::callbackShared(msg);
+                        }
+                    );
+                    break;
+                }
+                case MessagePassingType::REFERENCE:
+                {
+                    this->inputSubscriber = create_subscription<T>(
+                        "input", this->options.inputQueueSize,
+                        [this](const T& msg) {
+                            FilterChainBase<T>::callbackReference(msg);
+                        });
+                    break;
+                }
+                default:
+                    assert(false && "Unexpected subscription type");
             }
         }
 
@@ -57,12 +80,12 @@ namespace sensor_filters {
             return true;
         }
 
-        void publishUnique(typename T::UniquePtr& msg) override {
+        void publishUnique(typename T::UniquePtr msg) override {
             this->outputPublisher->publish(std::move(msg));
         }
 
         void publishShared(const typename T::ConstSharedPtr&) override {
-            RCLCPP_ERROR_THROTTLE(get_logger(), *get_clock(), 1000, "must be overridden by child class");
+            throw std::runtime_error("FilterChainNode does not support shared_ptr publications");
         }
 
         void publishReference(const T& msg) override {
@@ -78,8 +101,9 @@ namespace sensor_filters {
     class LifecycleFilterChainNode : public rclcpp_lifecycle::LifecycleNode, public Base {
     public:
         // TODO 2026-03-16 (solonovamax): support parameter callback
-        explicit LifecycleFilterChainNode(const std::string& messageType, const std::string& name, const rclcpp::NodeOptions& options) :
-            LifecycleNode(name, options), Base(*this, messageType, name, false)
+        explicit LifecycleFilterChainNode(const std::string& messageType, const std::string& name,
+            const rclcpp::NodeOptions& options, const FilterChainOptions& defaultChainOptions = {}) :
+            LifecycleNode(name, options), Base(*this, messageType, name, defaultChainOptions)
         {
         }
 
@@ -121,25 +145,47 @@ namespace sensor_filters {
         }
 
     protected:
+        bool validatePublicationType() const override {
+            return this->options.publicationType != MessagePassingType::SHARED_PTR;
+        }
+
         void advertise() override {
-            this->outputPublisher = create_publisher<T>("output", this->outputQueueSize);
+            this->outputPublisher = create_publisher<T>("output", this->options.outputQueueSize);
         }
 
         void subscribe() override {
-            if (this->usePtrMessages) {
-                this->inputSubscriber = create_subscription<T>(
-                    "input", this->inputQueueSize,
-                    [this](const typename T::UniquePtr& msg) {
-                        FilterChainBase<T>::callbackUnique(msg);
-                    }
-                );
-            } else {
-                this->inputSubscriber = create_subscription<T>(
-                    "input", this->inputQueueSize,
-                    [this](const T& msg) {
-                        FilterChainBase<T>::callbackReference(msg);
-                    }
-                );
+            switch (this->options.subscriptionType) {
+                case MessagePassingType::UNIQUE_PTR:
+                {
+                    this->inputSubscriber = create_subscription<T>(
+                        "input", this->options.inputQueueSize,
+                        [this](typename T::UniquePtr msg) {
+                            FilterChainBase<T>::callbackUnique(std::move(msg));
+                        }
+                    );
+                    break;
+                }
+                case MessagePassingType::SHARED_PTR:
+                {
+                    this->inputSubscriber = create_subscription<T>(
+                        "input", this->options.inputQueueSize,
+                        [this](const typename T::ConstSharedPtr& msg) {
+                            FilterChainBase<T>::callbackShared(msg);
+                        }
+                    );
+                    break;
+                }
+                case MessagePassingType::REFERENCE:
+                {
+                    this->inputSubscriber = create_subscription<T>(
+                        "input", this->options.inputQueueSize,
+                        [this](const T& msg) {
+                            FilterChainBase<T>::callbackReference(msg);
+                        });
+                    break;
+                }
+                default:
+                    assert(false && "Unexpected subscription type");
             }
         }
 
@@ -147,7 +193,7 @@ namespace sensor_filters {
             return this->outputPublisher->is_activated();
         }
 
-        void publishUnique(typename T::UniquePtr& msg) override {
+        void publishUnique(typename T::UniquePtr msg) override {
             if (!this->isActive())
                 return;
 
@@ -155,7 +201,7 @@ namespace sensor_filters {
         }
 
         void publishShared(const typename T::ConstSharedPtr&) override {
-            RCLCPP_ERROR_THROTTLE(get_logger(), *get_clock(), 1000, "must be overridden by child class");
+            throw std::runtime_error("LifeCycleFilterChainNode does not support shared_ptr publications");
         }
 
         void publishReference(const T& msg) override {

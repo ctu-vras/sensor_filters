@@ -24,16 +24,56 @@ namespace sensor_filters {
         rclcpp::node_interfaces::NodeLoggingInterface
     >;
 
+    enum class MessagePassingType {
+        REFERENCE,
+        SHARED_PTR,
+        UNIQUE_PTR,
+    };
+
+    struct FilterChainOptions {
+        size_t inputQueueSize {10U};
+        size_t outputQueueSize {10U};
+        MessagePassingType subscriptionType {MessagePassingType::UNIQUE_PTR};
+        MessagePassingType publicationType {MessagePassingType::UNIQUE_PTR};
+    };
+
+    MessagePassingType parseMessagePassingType(const std::string& type)
+    {
+        auto lowerType = type;
+        std::transform(type.begin(), type.end(), lowerType.begin(), [](unsigned char c){ return std::tolower(c); });
+
+        if (lowerType == "reference")
+            return MessagePassingType::REFERENCE;
+        if (lowerType == "shared_ptr")
+            return MessagePassingType::SHARED_PTR;
+        if (lowerType == "unique_ptr")
+            return MessagePassingType::UNIQUE_PTR;
+        throw std::invalid_argument("Invalid message passing type: " + type);
+    }
+
+    std::string to_string(const MessagePassingType type)
+    {
+        switch (type)
+        {
+            case MessagePassingType::REFERENCE:
+                return "reference";
+            case MessagePassingType::SHARED_PTR:
+                return "shared_ptr";
+            case MessagePassingType::UNIQUE_PTR:
+                return "unique_ptr";
+            default:
+                assert(false && "Unexpected message passing type");
+                return "unknown";
+        }
+    }
+
     template <typename T>
     class FilterChainBase {
 
     protected:
         std::string filterChainNamespace;
-        size_t defaultInputQueueSize;
-        size_t inputQueueSize;
-        size_t defaultOutputQueueSize;
-        size_t outputQueueSize;
-        bool usePtrMessages = true;
+        const FilterChainOptions defaultOptions;
+        FilterChainOptions options;
 
         RequiredInterfaces nodeInterfaces;
 
@@ -48,20 +88,20 @@ namespace sensor_filters {
             RequiredInterfaces nodeInterfaces,
             const std::string& messageType,
             std::string filterChainNamespace,
-            const bool usePtrMessages,
-            const size_t defaultInputQueueSize = 10u,
-            const size_t defaultOutputQueueSize = 10u
+            const FilterChainOptions& defaultOptions = {}
         ) : filterChainNamespace(std::move(filterChainNamespace)),
-            defaultInputQueueSize(defaultInputQueueSize), inputQueueSize(defaultInputQueueSize),
-            defaultOutputQueueSize(defaultOutputQueueSize), outputQueueSize(defaultOutputQueueSize),
-            usePtrMessages(usePtrMessages), nodeInterfaces(std::move(nodeInterfaces)), filterChain(messageType),
-            messageType(messageType)
+            defaultOptions(defaultOptions), options(defaultOptions),
+            nodeInterfaces(std::move(nodeInterfaces)), filterChain(messageType), messageType(messageType)
         {
             const auto params = this->nodeInterfaces.get_node_parameters_interface();
             params->declare_parameter(
-                "input_queue_size", rclcpp::ParameterValue(static_cast<int64_t>(this->defaultInputQueueSize)));
+                "input_queue_size", rclcpp::ParameterValue(static_cast<int64_t>(defaultOptions.inputQueueSize)));
             params->declare_parameter(
-                "output_queue_size", rclcpp::ParameterValue(static_cast<int64_t>(this->defaultOutputQueueSize)));
+                "output_queue_size", rclcpp::ParameterValue(static_cast<int64_t>(defaultOptions.outputQueueSize)));
+            params->declare_parameter(
+                "subscription_type", rclcpp::ParameterValue(to_string(defaultOptions.subscriptionType)));
+            params->declare_parameter(
+                "publication_type", rclcpp::ParameterValue(to_string(defaultOptions.publicationType)));
         }
 
         virtual ~FilterChainBase() = default;
@@ -70,8 +110,26 @@ namespace sensor_filters {
             const auto loggingInterface = this->nodeInterfaces.get_node_logging_interface();
             const auto paramsInterface = this->nodeInterfaces.get_node_parameters_interface();
 
-            this->inputQueueSize = paramsInterface->get_parameter("input_queue_size").as_int();
-            this->outputQueueSize = paramsInterface->get_parameter("output_queue_size").as_int();
+            this->options.inputQueueSize = paramsInterface->get_parameter("input_queue_size").as_int();
+            this->options.outputQueueSize = paramsInterface->get_parameter("output_queue_size").as_int();
+
+            this->options.subscriptionType = parseMessagePassingType(
+                paramsInterface->get_parameter("subscription_type").as_string());
+            if (!this->validateSubscriptionType())
+            {
+                RCLCPP_FATAL(loggingInterface->get_logger(),
+                    "Invalid subscription type %s", to_string(this->options.subscriptionType).c_str());
+                throw std::runtime_error("Invalid subscription type " + to_string(this->options.subscriptionType));
+            }
+
+            this->options.publicationType = parseMessagePassingType(
+                paramsInterface->get_parameter("publication_type").as_string());
+            if (!this->validatePublicationType())
+            {
+                RCLCPP_FATAL(loggingInterface->get_logger(),
+                    "Invalid publication type %s", to_string(this->options.publicationType).c_str());
+                throw std::runtime_error("Invalid publication type " + to_string(this->options.publicationType));
+            }
 
             if (!this->filterChain.configure(filterChainNamespace, loggingInterface, paramsInterface)) {
                 RCLCPP_ERROR_STREAM(loggingInterface->get_logger(), "Configuration of filter chain for "
@@ -87,36 +145,64 @@ namespace sensor_filters {
 
         virtual bool isActive() = 0;
 
-        virtual void publishUnique(typename T::UniquePtr& msg) = 0;
+        virtual void publishUnique(typename T::UniquePtr msg) = 0;
 
         virtual void publishShared(const typename T::ConstSharedPtr& msg) = 0;
 
         virtual void publishReference(const T& msg) = 0;
 
-        virtual void callbackUnique(const typename T::UniquePtr& msgIn) {
-            if (!isActive())
-                return;
+        virtual bool validateSubscriptionType() const
+        {
+            return true;
+        }
 
-            typename T::UniquePtr msgOut = std::make_unique<T>();
-            if (this->filter(*msgIn, *msgOut))
-                this->publishUnique(msgOut);
+        virtual bool validatePublicationType() const
+        {
+            return true;
+        }
+
+        virtual void callbackUnique(typename T::UniquePtr msgIn) {
+            this->callbackCommon(*msgIn);
         }
 
         virtual void callbackShared(const typename T::ConstSharedPtr& msgIn) {
-            if (!isActive())
-                return;
-
-            typename T::SharedPtr msgOut = std::make_shared<T>();
-            if (this->filter(*msgIn, *msgOut))
-                this->publishShared(msgOut);
+            this->callbackCommon(*msgIn);
         }
 
         virtual void callbackReference(const T& msgIn) {
+            this->callbackCommon(msgIn);
+        }
+
+        virtual void callbackCommon(const T& msgIn) {
             if (!isActive())
                 return;
 
-            if (this->filter(msgIn, this->msg))
-                this->publishReference(this->msg);
+            switch (this->options.publicationType)
+            {
+                case MessagePassingType::UNIQUE_PTR:
+                {
+                    auto msgOut = std::make_unique<T>();
+                    if (this->filter(msgIn, *msgOut))
+                        this->publishUnique(std::move(msgOut));
+                    break;
+                }
+                case MessagePassingType::SHARED_PTR:
+                {
+                    auto msgOut = std::make_shared<T>();
+                    if (this->filter(msgIn, *msgOut))
+                        this->publishShared(msgOut);
+                    break;
+                }
+                case MessagePassingType::REFERENCE:
+                {
+                    if (this->filter(msgIn, this->msg))
+                        this->publishReference(this->msg);
+                    break;
+                }
+                default:
+                    assert(false && "Unexpected publication type");
+                    break;
+            }
         }
 
         virtual bool filter(const T& msgIn, T& msgOut) {
