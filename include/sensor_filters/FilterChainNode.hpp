@@ -15,7 +15,7 @@
 namespace sensor_filters {
     // TODO 2026-03-17 (solonovamax): maybe create a FilterChainNodeGeneric template that can be used for both normal & lifecycle nodes?
 
-    template <typename T, typename Base = FilterChainBase<T>>
+    template <typename T, typename Base = FilterChainNodeBase<T>>
     class FilterChainNode : public rclcpp::Node, public Base {
     public:
         // TODO 2026-03-16 (solonovamax): support parameter callback
@@ -28,18 +28,16 @@ namespace sensor_filters {
         ~FilterChainNode() override
         {
             Base::on_deactivate();
+            Base::on_shutdown();
         }
 
-        void configure() override {
-            Base::configure();
+        void on_configure() override {
+            Base::on_configure();
             Base::on_activate();
-
-            this->advertise();
-            this->subscribe();
         }
     };
 
-    template <typename T, typename Base = FilterChainBase<T>>
+    template <typename T, typename Base = FilterChainNodeBase<T>>
     class LifecycleFilterChainNode : public rclcpp_lifecycle::LifecycleNode, public Base {
     public:
         // TODO 2026-03-16 (solonovamax): support parameter callback
@@ -51,13 +49,10 @@ namespace sensor_filters {
 
         CallbackReturn on_configure(const rclcpp_lifecycle::State&) override {
             try {
-                Base::configure();
+                Base::on_configure();
             } catch (const std::runtime_error&) {
                 return CallbackReturn::ERROR;
             }
-
-            this->advertise();
-            this->subscribe();
 
             return CallbackReturn::SUCCESS;
         }
@@ -74,28 +69,23 @@ namespace sensor_filters {
             return rclcpp_lifecycle::LifecycleNode::on_deactivate(previous_state);
         }
 
-        CallbackReturn on_cleanup(const rclcpp_lifecycle::State&) override {
+        CallbackReturn on_cleanup(const rclcpp_lifecycle::State& previous_state) override {
             // reset state to before on_configure()
-            this->filterChain.clear();
-            this->outputPublisher.reset();
-            this->inputSubscriber.reset();
-
-            return CallbackReturn::SUCCESS;
+            Base::on_cleanup();
+            return rclcpp_lifecycle::LifecycleNode::on_cleanup(previous_state);
         }
 
-        CallbackReturn on_shutdown(const rclcpp_lifecycle::State&) override {
-            this->filterChain.clear();
-
-            return CallbackReturn::SUCCESS;
+        CallbackReturn on_shutdown(const rclcpp_lifecycle::State& previous_state) override {
+            Base::on_shutdown();
+            return rclcpp_lifecycle::LifecycleNode::on_shutdown(previous_state);
         }
 
-        CallbackReturn on_error(const rclcpp_lifecycle::State&) override {
+        CallbackReturn on_error(const rclcpp_lifecycle::State& previous_state) override {
             // currently an error can only occur in on_configure, so we don't need to check the previous state
             // if other transitions are ever changed so that they can error, then this needs to be updated.
 
-            this->filterChain.clear();
-
-            return CallbackReturn::SUCCESS;
+            Base::on_cleanup();
+            return rclcpp_lifecycle::LifecycleNode::on_error(previous_state);
         }
     };
 

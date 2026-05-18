@@ -9,7 +9,7 @@ namespace sensor_filters {
     class @CLASS_NAME@ : public FilterChainNode<@TEMPLATE_ARGS@> {
     public:
         explicit @CLASS_NAME@(const rclcpp::NodeOptions& options) : FilterChainNode("@MESSAGE_TYPE@", "@NODE_NAME@", options) {
-            @CLASS_NAME@::configure();
+            @CLASS_NAME@::on_configure();
         }
     };
 }

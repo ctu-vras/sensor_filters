@@ -27,7 +27,7 @@ namespace sensor_filters {
 #else
             this->pct = std::make_unique<point_cloud_transport::PointCloudTransport>(*this);
 #endif
-            PointCloud2FilterChainNode::configure();
+            PointCloud2FilterChainNode::on_configure();
         }
 
     protected:
@@ -41,18 +41,27 @@ namespace sensor_filters {
             return this->options.publicationType != MessagePassingType::UNIQUE_PTR;
         }
 
-        void advertise() override {
+        void advertise(const std::string& topic) override {
             this->pctPublisher = this->pct->advertise(
-                this->get_node_topics_interface()->resolve_topic_name("output"), this->options.outputQueueSize);
+                this->get_node_topics_interface()->resolve_topic_name(topic), this->options.outputQueueSize);
         }
 
-        void subscribe() override {
+        void unadvertise() override
+        {
+            this->pctPublisher.shutdown();
+        }
+
+        void subscribe(const std::string& topic) override {
             this->pctSubscriber = this->pct->subscribe(
-                this->get_node_topics_interface()->resolve_topic_name("input"), this->options.inputQueueSize,
+                this->get_node_topics_interface()->resolve_topic_name(topic), this->options.inputQueueSize,
                 [this](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg) {
                     PointCloud2FilterChainNode::callbackShared(msg);
                 }
             );
+        }
+
+        void unsubscribe() override {
+            this->pctSubscriber.shutdown();
         }
 
         void publishUnique(sensor_msgs::msg::PointCloud2::UniquePtr) override {

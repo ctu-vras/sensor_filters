@@ -85,9 +85,6 @@ namespace sensor_filters {
 
         rclcpp::Clock wallClock {RCL_SYSTEM_TIME};
 
-        std::shared_ptr<rclcpp::Subscription<T>> inputSubscriber;
-        std::shared_ptr<rclcpp::Publisher<T>> outputPublisher;
-
     public:
         FilterChainBase(
             RequiredInterfaces nodeInterfaces,
@@ -109,7 +106,7 @@ namespace sensor_filters {
                 "publication_type", rclcpp::ParameterValue(to_string(defaultOptions.publicationType)));
         }
 
-        virtual void configure() {
+        virtual void on_configure() {
             const auto loggingInterface = this->nodeInterfaces.get_node_logging_interface();
             const auto paramsInterface = this->nodeInterfaces.get_node_parameters_interface();
 
@@ -139,58 +136,36 @@ namespace sensor_filters {
                                     << messageType << " is invalid, the chain will not be run.");
                 throw std::runtime_error("Filter configuration error");
             }
+
+            this->advertise("output");
+            this->subscribe("input");
+        }
+
+        virtual void on_cleanup() {
+            this->unsubscribe();
+            this->unadvertise();
+
+            this->filterChain.clear();
+
+            this->options = this->defaultOptions;
+        }
+
+        virtual void on_shutdown() {
+            this->on_cleanup();
         }
 
     protected:
-        virtual void advertise()
+        virtual void advertise(const std::string& topic) = 0;
+
+        virtual void unadvertise() = 0;
+
+        virtual void subscribe(const std::string& topic) = 0;
+
+        virtual void unsubscribe() = 0;
+
+        virtual void publishUnique(typename T::UniquePtr)
         {
-            this->outputPublisher = rclcpp::create_publisher<T>(this->nodeInterfaces, "output", rclcpp::QoS(this->options.outputQueueSize));
-        }
-
-        virtual void subscribe()
-        {
-            switch (this->options.subscriptionType) {
-                case MessagePassingType::UNIQUE_PTR:
-                {
-
-                    this->inputSubscriber = rclcpp::create_subscription<T>(
-                        this->nodeInterfaces, "input", rclcpp::QoS(this->options.inputQueueSize),
-                        [this](typename T::UniquePtr msg) {
-                            FilterChainBase<T>::callbackUnique(std::move(msg));
-                        }
-                    );
-                    break;
-                }
-                case MessagePassingType::SHARED_PTR:
-                {
-                    this->inputSubscriber = rclcpp::create_subscription<T>(
-                        this->nodeInterfaces, "input", rclcpp::QoS(this->options.inputQueueSize),
-                        [this](const typename T::ConstSharedPtr& msg) {
-                            FilterChainBase<T>::callbackShared(msg);
-                        }
-                    );
-                    break;
-                }
-                case MessagePassingType::REFERENCE:
-                {
-                    this->inputSubscriber = rclcpp::create_subscription<T>(
-                        this->nodeInterfaces, "input", rclcpp::QoS(this->options.inputQueueSize),
-                        [this](const T& msg) {
-                            FilterChainBase<T>::callbackReference(msg);
-                        });
-                    break;
-                }
-                default:
-                    assert(false && "Unexpected subscription type");
-            }
-        }
-
-        virtual void publishUnique(typename T::UniquePtr msg)
-        {
-            if (!this->is_activated())
-                return;
-
-            this->outputPublisher->publish(std::move(msg));
+            throw std::runtime_error("FilterChainBase does not support unique_ptr publications");
         }
 
         virtual void publishShared(const typename T::ConstSharedPtr&)
@@ -198,22 +173,19 @@ namespace sensor_filters {
             throw std::runtime_error("FilterChainBase does not support shared_ptr publications");
         }
 
-        virtual void publishReference(const T& msg)
+        virtual void publishReference(const T&)
         {
-            if (!this->is_activated())
-                return;
-
-            this->outputPublisher->publish(msg);
+            throw std::runtime_error("FilterChainBase does not support reference publications");
         }
 
         virtual bool validateSubscriptionType() const
         {
-            return true;
+            return false;
         }
 
         virtual bool validatePublicationType() const
         {
-            return this->options.publicationType != MessagePassingType::SHARED_PTR;
+            return false;
         }
 
         virtual void callbackUnique(typename T::UniquePtr msgIn) {
@@ -272,5 +244,99 @@ namespace sensor_filters {
             RCLCPP_DEBUG(loggingInterface->get_logger(), "Filtering took %0.09f s.", (end - start).seconds());
             return true;
         }
+    };
+
+    template <typename T>
+    class FilterChainNodeBase : public FilterChainBase<T> {
+    public:
+        explicit FilterChainNodeBase(RequiredInterfaces nodeInterfaces, const std::string& messageType,
+            const std::string& name, const FilterChainOptions& defaultChainOptions = {}) :
+            FilterChainBase<T>(nodeInterfaces, messageType, name, defaultChainOptions)
+        {
+        }
+
+    protected:
+        void advertise(const std::string& topic) override
+        {
+            this->outputPublisher = rclcpp::create_publisher<T>(
+                this->nodeInterfaces, topic, rclcpp::QoS(this->options.outputQueueSize));
+        }
+
+        void unadvertise() override
+        {
+            this->outputPublisher.reset();
+        }
+
+        void subscribe(const std::string& topic) override
+        {
+            switch (this->options.subscriptionType) {
+                case MessagePassingType::UNIQUE_PTR:
+                {
+
+                    this->inputSubscriber = rclcpp::create_subscription<T>(
+                        this->nodeInterfaces, topic, rclcpp::QoS(this->options.inputQueueSize),
+                        [this](typename T::UniquePtr msg) {
+                            FilterChainBase<T>::callbackUnique(std::move(msg));
+                        }
+                    );
+                    break;
+                }
+                case MessagePassingType::SHARED_PTR:
+                {
+                    this->inputSubscriber = rclcpp::create_subscription<T>(
+                        this->nodeInterfaces, topic, rclcpp::QoS(this->options.inputQueueSize),
+                        [this](const typename T::ConstSharedPtr& msg) {
+                            FilterChainBase<T>::callbackShared(msg);
+                        }
+                    );
+                    break;
+                }
+                case MessagePassingType::REFERENCE:
+                {
+                    this->inputSubscriber = rclcpp::create_subscription<T>(
+                        this->nodeInterfaces, topic, rclcpp::QoS(this->options.inputQueueSize),
+                        [this](const T& msg) {
+                            FilterChainBase<T>::callbackReference(msg);
+                        });
+                    break;
+                }
+                default:
+                    assert(false && "Unexpected subscription type");
+            }
+        }
+
+        void unsubscribe() override
+        {
+            this->inputSubscriber.reset();
+        }
+
+        void publishUnique(typename T::UniquePtr msg) override
+        {
+            if (!this->is_activated())
+                return;
+
+            this->outputPublisher->publish(std::move(msg));
+        }
+
+        void publishReference(const T& msg) override
+        {
+            if (!this->is_activated())
+                return;
+
+            this->outputPublisher->publish(msg);
+        }
+
+        bool validateSubscriptionType() const override
+        {
+            return true;
+        }
+
+        bool validatePublicationType() const override
+        {
+            return this->options.publicationType != MessagePassingType::SHARED_PTR;
+        }
+
+        typename rclcpp::Subscription<T>::SharedPtr inputSubscriber;
+        typename rclcpp::Publisher<T>::SharedPtr outputPublisher;
     };
 }

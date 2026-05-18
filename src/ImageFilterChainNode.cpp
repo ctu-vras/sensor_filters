@@ -29,7 +29,7 @@ namespace sensor_filters {
 #else
             this->it = std::make_unique<image_transport::ImageTransport>(*this);
 #endif
-            ImageFilterChainNode::configure();
+            ImageFilterChainNode::on_configure();
         }
 
     protected:
@@ -43,18 +43,26 @@ namespace sensor_filters {
             return true;
         }
 
-        void advertise() override {
+        void advertise(const std::string& topic) override {
             this->itPublisher = this->it->advertise(
-                this->get_node_topics_interface()->resolve_topic_name("output"), this->options.outputQueueSize);
+                this->get_node_topics_interface()->resolve_topic_name(topic), this->options.outputQueueSize);
         }
 
-        void subscribe() override {
+        void unadvertise() override {
+            this->itPublisher.shutdown();
+        }
+
+        void subscribe(const std::string& topic) override {
             this->itSubscriber = this->it->subscribe(
-                this->get_node_topics_interface()->resolve_topic_name("input"), this->options.inputQueueSize,
+                this->get_node_topics_interface()->resolve_topic_name(topic), this->options.inputQueueSize,
                 [this](const sensor_msgs::msg::Image::ConstSharedPtr& msg) {
                     this->callbackShared(msg);
                 }
             );
+        }
+
+        void unsubscribe() override {
+            this->itSubscriber.shutdown();
         }
 
         void publishUnique(sensor_msgs::msg::Image::UniquePtr msg) override {
