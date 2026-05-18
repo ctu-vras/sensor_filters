@@ -16,13 +16,15 @@
 namespace sensor_filters {
     class ImageFilterChainBase : public FilterChainBase<sensor_msgs::msg::Image> {
     public:
+        constexpr static FilterChainOptions DEFAULT_CHAIN_OPTIONS = {
+            10U, 10U, MessagePassingType::SHARED_PTR, MessagePassingType::SHARED_PTR
+        };
+
         explicit ImageFilterChainBase(
             RequiredInterfaces nodeInterfaces,
             const std::string& messageType = "sensor_msgs::msg::Image",
             const std::string& name = "image_filter_chain",
-            const FilterChainOptions& defaultChainOptions = {
-                10U, 10U, MessagePassingType::SHARED_PTR, MessagePassingType::SHARED_PTR
-            })
+            const FilterChainOptions& defaultChainOptions = DEFAULT_CHAIN_OPTIONS)
             : FilterChainBase(nodeInterfaces, messageType, name, defaultChainOptions)
         {
             const auto params = nodeInterfaces.get_node_parameters_interface();
@@ -32,7 +34,7 @@ namespace sensor_filters {
             this->nodePtr = get_node_shared_ptr_from_interfaces(nodeInterfaces);
             this->it = std::make_unique<image_transport::ImageTransport>(this->nodePtr);
 #else
-            this->it = std::make_unique<image_transport::ImageTransport>(*this);
+            this->it = std::make_unique<image_transport::ImageTransport>(nodeInterfaces);
 #endif
         }
 
@@ -93,9 +95,7 @@ namespace sensor_filters {
     class ImageFilterChainNode : public FilterChainNode<sensor_msgs::msg::Image, ImageFilterChainBase> {
     public:
         explicit ImageFilterChainNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions(),
-            const FilterChainOptions& defaultChainOptions = {
-                10U, 10U, MessagePassingType::SHARED_PTR, MessagePassingType::SHARED_PTR
-            })
+            const FilterChainOptions& defaultChainOptions = ImageFilterChainBase::DEFAULT_CHAIN_OPTIONS)
             : FilterChainNode("sensor_msgs::msg::Image", "image_filter_chain", options, defaultChainOptions)
         {
         }
@@ -104,9 +104,7 @@ namespace sensor_filters {
     class LifecycleImageFilterChainNode : public LifecycleFilterChainNode<sensor_msgs::msg::Image, ImageFilterChainBase> {
     public:
         explicit LifecycleImageFilterChainNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions(),
-            const FilterChainOptions& defaultChainOptions = {
-                10U, 10U, MessagePassingType::SHARED_PTR, MessagePassingType::SHARED_PTR
-            })
+            const FilterChainOptions& defaultChainOptions = ImageFilterChainBase::DEFAULT_CHAIN_OPTIONS)
             : LifecycleFilterChainNode("sensor_msgs::msg::Image", "image_filter_chain", options, defaultChainOptions)
         {
         }

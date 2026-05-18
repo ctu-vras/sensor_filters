@@ -16,19 +16,21 @@
 namespace sensor_filters {
     class PointCloud2FilterChainBase : public FilterChainBase<sensor_msgs::msg::PointCloud2> {
     public:
+        constexpr static FilterChainOptions DEFAULT_CHAIN_OPTIONS = {
+            10U, 10U, MessagePassingType::SHARED_PTR, MessagePassingType::SHARED_PTR
+        };
+
         explicit PointCloud2FilterChainBase(
             RequiredInterfaces nodeInterfaces,
             const std::string& messageType = "sensor_msgs::msg::PointCloud2",
             const std::string& name = "pointcloud2_filter_chain",
-            const FilterChainOptions& defaultChainOptions = {
-                10U, 10U, MessagePassingType::SHARED_PTR, MessagePassingType::SHARED_PTR
-            })
+            const FilterChainOptions& defaultChainOptions = DEFAULT_CHAIN_OPTIONS)
             : FilterChainBase(nodeInterfaces, messageType, name, defaultChainOptions) {
 #ifdef POINT_CLOUD_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE
             this->nodePtr = get_node_shared_ptr_from_interfaces(nodeInterfaces);
             this->pct = std::make_unique<point_cloud_transport::PointCloudTransport>(this->nodePtr);
 #else
-            this->pct = std::make_unique<point_cloud_transport::PointCloudTransport>(*this);
+            this->pct = std::make_unique<point_cloud_transport::PointCloudTransport>(nodeInterfaces);
 #endif
         }
 
@@ -92,9 +94,7 @@ namespace sensor_filters {
     public:
         explicit PointCloud2FilterChainNode(
             const rclcpp::NodeOptions& options = rclcpp::NodeOptions(),
-            const FilterChainOptions& defaultChainOptions = {
-                10U, 10U, MessagePassingType::SHARED_PTR, MessagePassingType::SHARED_PTR
-            })
+            const FilterChainOptions& defaultChainOptions = PointCloud2FilterChainBase::DEFAULT_CHAIN_OPTIONS)
             : FilterChainNode("sensor_msgs::msg::PointCloud2", "pointcloud2_filter_chain", options, defaultChainOptions)
         {
         }
@@ -104,9 +104,7 @@ namespace sensor_filters {
     public:
         explicit LifecyclePointCloud2FilterChainNode(
             const rclcpp::NodeOptions& options = rclcpp::NodeOptions(),
-            const FilterChainOptions& defaultChainOptions = {
-                10U, 10U, MessagePassingType::SHARED_PTR, MessagePassingType::SHARED_PTR
-            })
+            const FilterChainOptions& defaultChainOptions = PointCloud2FilterChainBase::DEFAULT_CHAIN_OPTIONS)
             : LifecycleFilterChainNode("sensor_msgs::msg::PointCloud2", "pointcloud2_filter_chain", options, defaultChainOptions)
         {
         }
