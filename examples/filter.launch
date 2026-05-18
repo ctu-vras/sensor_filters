@@ -9,11 +9,15 @@ timestamps.
 <launch>
     <arg name="publish_sample_data" default="false" />
     <arg name="log_level" default="INFO" />
+    <arg name="lifecycle" default="false" />
 
-    <node pkg="sensor_filters" exec="scan_filter_chain" output="screen" name="laser_filter" args="--ros-args --log-level $(var log_level)">
+    <let name="lifecycle_suffix" value="" unless="$(var lifecycle)" />
+    <let name="lifecycle_suffix" value="_lifecycle" if="$(var lifecycle)" />
+
+    <node pkg="sensor_filters" exec="scan_filter_chain$(var lifecycle_suffix)" output="screen" name="laser_filter" args="--ros-args --log-level $(var log_level)">
         <remap from="input" to="base_scan" />
         <remap from="output" to="base_scan_filtered" />
-        <param from="$(dirname)/filter.yaml" />
+        <param from="$(dirname)/filter.yaml" allow_substs="true" />
     </node>
 
     <group if="$(var publish_sample_data)">

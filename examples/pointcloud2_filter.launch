@@ -9,11 +9,15 @@ point_cloud_transport to subscribe and publish.
 <launch>
     <arg name="publish_sample_data" default="false" />
     <arg name="log_level" default="INFO" />
+    <arg name="lifecycle" default="false" />
 
-    <node pkg="sensor_filters" exec="pointcloud2_filter_chain" output="screen" name="cloud_filter" args="--ros-args --log-level $(var log_level)">
+    <let name="lifecycle_suffix" value="" unless="$(var lifecycle)" />
+    <let name="lifecycle_suffix" value="_lifecycle" if="$(var lifecycle)" />
+
+    <node pkg="sensor_filters" exec="pointcloud2_filter_chain$(var lifecycle_suffix)" output="screen" name="cloud_filter" args="--ros-args --log-level $(var log_level)">
         <remap from="input" to="cloud" />
         <remap from="output" to="cloud_filtered" />
-        <param from="$(dirname)/pointcloud2_filter.yaml" />
+        <param from="$(dirname)/pointcloud2_filter.yaml" allow_substs="true" />
     </node>
 
     <group if="$(var publish_sample_data)">

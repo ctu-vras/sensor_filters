@@ -10,7 +10,7 @@
     image_transport: compressed
     output_queue_size: 101
     publication_type: unique_ptr
-    image_filter_chain:
+    image_filter_chain$(var lifecycle_suffix):
       filter1:
         # This filter will subtract 25 ms from each image timestamp, e.g. to account for transport delay.
         name: delay
