@@ -25,8 +25,14 @@ namespace sensor_filters {
         {
         }
 
+        ~FilterChainNode() override
+        {
+            Base::on_deactivate();
+        }
+
         void configure() override {
             Base::configure();
+            Base::on_activate();
 
             advertise();
             subscribe();
@@ -76,10 +82,6 @@ namespace sensor_filters {
             }
         }
 
-        bool isActive() override {
-            return true;
-        }
-
         void publishUnique(typename T::UniquePtr msg) override {
             this->outputPublisher->publish(std::move(msg));
         }
@@ -118,6 +120,18 @@ namespace sensor_filters {
             subscribe();
 
             return CallbackReturn::SUCCESS;
+        }
+
+        CallbackReturn on_activate(const rclcpp_lifecycle::State& previous_state) override
+        {
+            Base::on_activate();
+            return rclcpp_lifecycle::LifecycleNode::on_activate(previous_state);
+        }
+
+        CallbackReturn on_deactivate(const rclcpp_lifecycle::State& previous_state) override
+        {
+            Base::on_deactivate();
+            return rclcpp_lifecycle::LifecycleNode::on_deactivate(previous_state);
         }
 
         CallbackReturn on_cleanup(const rclcpp_lifecycle::State&) override {
@@ -189,12 +203,8 @@ namespace sensor_filters {
             }
         }
 
-        bool isActive() override {
-            return this->outputPublisher->is_activated();
-        }
-
         void publishUnique(typename T::UniquePtr msg) override {
-            if (!this->isActive())
+            if (!this->is_activated())
                 return;
 
             this->outputPublisher->publish(std::move(msg));
@@ -205,7 +215,7 @@ namespace sensor_filters {
         }
 
         void publishReference(const T& msg) override {
-            if (!this->isActive())
+            if (!this->is_activated())
                 return;
 
             this->outputPublisher->publish(msg);

@@ -15,6 +15,7 @@
 #include <rclcpp/node_interfaces/node_interfaces.hpp>
 #include <rclcpp/clock.hpp>
 #include <rclcpp/time.hpp>
+#include <rclcpp_lifecycle/managed_entity.hpp>
 
 namespace sensor_filters {
 
@@ -68,7 +69,7 @@ namespace sensor_filters {
     }
 
     template <typename T>
-    class FilterChainBase {
+    class FilterChainBase : public rclcpp_lifecycle::SimpleManagedEntity {
 
     protected:
         std::string filterChainNamespace;
@@ -103,8 +104,6 @@ namespace sensor_filters {
             params->declare_parameter(
                 "publication_type", rclcpp::ParameterValue(to_string(defaultOptions.publicationType)));
         }
-
-        virtual ~FilterChainBase() = default;
 
         virtual void configure() {
             const auto loggingInterface = this->nodeInterfaces.get_node_logging_interface();
@@ -143,8 +142,6 @@ namespace sensor_filters {
 
         virtual void subscribe() = 0;
 
-        virtual bool isActive() = 0;
-
         virtual void publishUnique(typename T::UniquePtr msg) = 0;
 
         virtual void publishShared(const typename T::ConstSharedPtr& msg) = 0;
@@ -174,7 +171,7 @@ namespace sensor_filters {
         }
 
         virtual void callbackCommon(const T& msgIn) {
-            if (!isActive())
+            if (!this->is_activated())
                 return;
 
             switch (this->options.publicationType)
