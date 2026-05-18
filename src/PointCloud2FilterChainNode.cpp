@@ -4,8 +4,9 @@
 #include <memory>
 #include <string>
 
-#include <sensor_filters/FilterChainNode.hpp>
 #include <point_cloud_transport/point_cloud_transport.hpp>
+#include <sensor_filters/FilterChainNode.hpp>
+#include <sensor_filters/NodeInterfaces.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
 #ifdef POINT_CLOUD_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE
@@ -13,21 +14,22 @@
 #endif
 
 namespace sensor_filters {
-    class PointCloud2FilterChainNode : public FilterChainNode<sensor_msgs::msg::PointCloud2> {
+    class PointCloud2FilterChainBase : public FilterChainBase<sensor_msgs::msg::PointCloud2> {
     public:
-        explicit PointCloud2FilterChainNode(
-            const rclcpp::NodeOptions& options,
+        explicit PointCloud2FilterChainBase(
+            RequiredInterfaces nodeInterfaces,
+            const std::string& messageType = "sensor_msgs::msg::PointCloud2",
+            const std::string& name = "pointcloud2_filter_chain",
             const FilterChainOptions& defaultChainOptions = {
                 10U, 10U, MessagePassingType::SHARED_PTR, MessagePassingType::SHARED_PTR
             })
-            : FilterChainNode("sensor_msgs::msg::PointCloud2", "pointcloud2_filter_chain", options, defaultChainOptions) {
+            : FilterChainBase(nodeInterfaces, messageType, name, defaultChainOptions) {
 #ifdef POINT_CLOUD_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE
-            this->nodePtr = get_node_shared_ptr_from_raw_ptr(this);
+            this->nodePtr = get_node_shared_ptr_from_interfaces(nodeInterfaces);
             this->pct = std::make_unique<point_cloud_transport::PointCloudTransport>(this->nodePtr);
 #else
             this->pct = std::make_unique<point_cloud_transport::PointCloudTransport>(*this);
 #endif
-            PointCloud2FilterChainNode::on_configure();
         }
 
     protected:
@@ -42,8 +44,8 @@ namespace sensor_filters {
         }
 
         void advertise(const std::string& topic) override {
-            this->pctPublisher = this->pct->advertise(
-                this->get_node_topics_interface()->resolve_topic_name(topic), this->options.outputQueueSize);
+            const auto topics = this->nodeInterfaces.get_node_topics_interface();
+            this->pctPublisher = this->pct->advertise(topics->resolve_topic_name(topic), this->options.outputQueueSize);
         }
 
         void unadvertise() override
@@ -52,10 +54,11 @@ namespace sensor_filters {
         }
 
         void subscribe(const std::string& topic) override {
+            const auto topics = this->nodeInterfaces.get_node_topics_interface();
             this->pctSubscriber = this->pct->subscribe(
-                this->get_node_topics_interface()->resolve_topic_name(topic), this->options.inputQueueSize,
+                topics->resolve_topic_name(topic), this->options.inputQueueSize,
                 [this](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg) {
-                    PointCloud2FilterChainNode::callbackShared(msg);
+                    this->callbackShared(msg);
                 }
             );
         }
@@ -84,7 +87,32 @@ namespace sensor_filters {
         point_cloud_transport::Publisher pctPublisher;
         point_cloud_transport::Subscriber pctSubscriber;
     };
+
+    class PointCloud2FilterChainNode : public FilterChainNode<sensor_msgs::msg::PointCloud2, PointCloud2FilterChainBase> {
+    public:
+        explicit PointCloud2FilterChainNode(
+            const rclcpp::NodeOptions& options = rclcpp::NodeOptions(),
+            const FilterChainOptions& defaultChainOptions = {
+                10U, 10U, MessagePassingType::SHARED_PTR, MessagePassingType::SHARED_PTR
+            })
+            : FilterChainNode("sensor_msgs::msg::PointCloud2", "pointcloud2_filter_chain", options, defaultChainOptions)
+        {
+        }
+    };
+
+    class LifecyclePointCloud2FilterChainNode : public LifecycleFilterChainNode<sensor_msgs::msg::PointCloud2, PointCloud2FilterChainBase> {
+    public:
+        explicit LifecyclePointCloud2FilterChainNode(
+            const rclcpp::NodeOptions& options = rclcpp::NodeOptions(),
+            const FilterChainOptions& defaultChainOptions = {
+                10U, 10U, MessagePassingType::SHARED_PTR, MessagePassingType::SHARED_PTR
+            })
+            : LifecycleFilterChainNode("sensor_msgs::msg::PointCloud2", "pointcloud2_filter_chain", options, defaultChainOptions)
+        {
+        }
+    };
 } // namespace sensor_filters
 
 #include <rclcpp_components/register_node_macro.hpp>
 RCLCPP_COMPONENTS_REGISTER_NODE(sensor_filters::PointCloud2FilterChainNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(sensor_filters::LifecyclePointCloud2FilterChainNode)

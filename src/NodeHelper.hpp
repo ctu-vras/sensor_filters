@@ -10,10 +10,13 @@
  */
 
 #include <rclcpp/node.hpp>
+#include <sensor_filters/NodeInterfaces.hpp>
 
 namespace sensor_filters
 {
 
 rclcpp::Node::SharedPtr get_node_shared_ptr_from_raw_ptr(rclcpp::Node* node);
+
+rclcpp::Node::SharedPtr get_node_shared_ptr_from_interfaces(RequiredInterfaces nodeInterfaces);
 
 } // namespace sensor_filters

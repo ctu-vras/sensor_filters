@@ -154,6 +154,10 @@ endfunction()
 
 add_library(${PROJECT_NAME}_node_helper SHARED src/NodeHelper.cpp)
 target_link_libraries(${PROJECT_NAME}_node_helper PUBLIC rclcpp::rclcpp)
+target_include_directories(${PROJECT_NAME}_node_helper PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
 
 generate_filter_chain_source("compressed_image" HEADER_NAME "compressed_image" MESSAGE_TYPE "CompressedImage")
 generate_filter_chain_source("imu" HEADER_NAME "imu" MESSAGE_TYPE "Imu")
@@ -168,8 +172,10 @@ generate_filter_chain_source("relative_humidity" HEADER_NAME "relative_humidity"
 generate_filter_chain_source("temperature" HEADER_NAME "temperature" MESSAGE_TYPE "Temperature")
 add_filter_chain_node("image_filter_chain" "ImageFilterChainNode" src/ImageFilterChainNode.cpp)
 target_link_libraries(image_filter_chain_component PRIVATE ${PROJECT_NAME}_node_helper)
+rclcpp_components_register_node("image_filter_chain_component" PLUGIN "sensor_filters::LifecycleImageFilterChainNode" EXECUTABLE image_filter_chain_lifecycle)
 add_filter_chain_node("pointcloud2_filter_chain" "PointCloud2FilterChainNode" src/PointCloud2FilterChainNode.cpp)
 target_link_libraries(pointcloud2_filter_chain_component PRIVATE ${PROJECT_NAME}_node_helper)
+rclcpp_components_register_node("pointcloud2_filter_chain_component" PLUGIN "sensor_filters::LifecyclePointCloud2FilterChainNode" EXECUTABLE pointcloud2_filter_chain_lifecycle)
 
 set(filters
         ChangeHeaderFilter

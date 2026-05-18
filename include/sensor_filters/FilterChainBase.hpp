@@ -16,15 +16,9 @@
 #include <rclcpp/clock.hpp>
 #include <rclcpp/time.hpp>
 #include <rclcpp_lifecycle/managed_entity.hpp>
+#include <sensor_filters/NodeInterfaces.hpp>
 
 namespace sensor_filters {
-
-    using RequiredInterfaces = rclcpp::node_interfaces::NodeInterfaces<
-        rclcpp::node_interfaces::NodeBaseInterface,
-        rclcpp::node_interfaces::NodeParametersInterface,
-        rclcpp::node_interfaces::NodeLoggingInterface,
-        rclcpp::node_interfaces::NodeTopicsInterface
-    >;
 
     enum class MessagePassingType {
         REFERENCE,
@@ -39,7 +33,7 @@ namespace sensor_filters {
         MessagePassingType publicationType {MessagePassingType::UNIQUE_PTR};
     };
 
-    MessagePassingType parseMessagePassingType(const std::string& type)
+    inline MessagePassingType parseMessagePassingType(const std::string& type)
     {
         auto lowerType = type;
         std::transform(type.begin(), type.end(), lowerType.begin(), [](unsigned char c){ return std::tolower(c); });
@@ -53,7 +47,7 @@ namespace sensor_filters {
         throw std::invalid_argument("Invalid message passing type: " + type);
     }
 
-    std::string to_string(const MessagePassingType type)
+    inline std::string to_string(const MessagePassingType type)
     {
         switch (type)
         {
@@ -71,6 +65,9 @@ namespace sensor_filters {
 
     template <typename T>
     class FilterChainBase : public rclcpp_lifecycle::SimpleManagedEntity {
+
+    public:
+        typedef T Message;
 
     protected:
         std::string filterChainNamespace;

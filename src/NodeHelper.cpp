@@ -14,8 +14,36 @@
 #include <rclcpp/node.hpp>
 #undef private
 
+#include <rclcpp/node_interfaces/node_interfaces.hpp>
+
+#include "NodeHelper.hpp"
+
 namespace sensor_filters
 {
+
+struct NodeLike
+{
+  uint8_t data[sizeof(rclcpp::Node)];
+};
+
+rclcpp::Node::SharedPtr get_node_shared_ptr_from_interfaces(RequiredInterfaces nodeInterfaces)
+{
+  // This is a trick to create a shared_ptr to Node without calling its constructor. This is super dangerous.
+  // Only use it when you know what you're doing. Using any other interfaces on the node than those specified here
+  // will lead to segfaults.
+  const auto nodeLike = std::make_shared<NodeLike>();
+  std::fill_n(nodeLike->data, sizeof(NodeLike), 0);
+  auto node = std::reinterpret_pointer_cast<rclcpp::Node>(nodeLike);
+
+  // This list is crafted to satisfy both image transport and point cloud transport.
+  node->node_base_ = nodeInterfaces.get_node_base_interface();
+  node->node_logging_ = nodeInterfaces.get_node_logging_interface();
+  node->node_parameters_ = nodeInterfaces.get_node_parameters_interface();
+  node->node_timers_ = nodeInterfaces.get_node_timers_interface();
+  node->node_topics_ = nodeInterfaces.get_node_topics_interface();
+
+  return node;
+}
 
 rclcpp::Node::SharedPtr get_node_shared_ptr_from_raw_ptr(rclcpp::Node* node)
 {
