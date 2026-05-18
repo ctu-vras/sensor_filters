@@ -34,69 +34,9 @@ namespace sensor_filters {
             Base::configure();
             Base::on_activate();
 
-            advertise();
-            subscribe();
+            this->advertise();
+            this->subscribe();
         }
-
-        bool validatePublicationType() const override {
-            return this->options.publicationType != MessagePassingType::SHARED_PTR;
-        }
-
-        void advertise() override {
-            this->outputPublisher = create_publisher<T>("output", this->options.outputQueueSize);
-        }
-
-        void subscribe() override {
-            switch (this->options.subscriptionType) {
-                case MessagePassingType::UNIQUE_PTR:
-                {
-                    this->inputSubscriber = create_subscription<T>(
-                        "input", this->options.inputQueueSize,
-                        [this](typename T::UniquePtr msg) {
-                            FilterChainBase<T>::callbackUnique(std::move(msg));
-                        }
-                    );
-                    break;
-                }
-                case MessagePassingType::SHARED_PTR:
-                {
-                    this->inputSubscriber = create_subscription<T>(
-                        "input", this->options.inputQueueSize,
-                        [this](const typename T::ConstSharedPtr& msg) {
-                            FilterChainBase<T>::callbackShared(msg);
-                        }
-                    );
-                    break;
-                }
-                case MessagePassingType::REFERENCE:
-                {
-                    this->inputSubscriber = create_subscription<T>(
-                        "input", this->options.inputQueueSize,
-                        [this](const T& msg) {
-                            FilterChainBase<T>::callbackReference(msg);
-                        });
-                    break;
-                }
-                default:
-                    assert(false && "Unexpected subscription type");
-            }
-        }
-
-        void publishUnique(typename T::UniquePtr msg) override {
-            this->outputPublisher->publish(std::move(msg));
-        }
-
-        void publishShared(const typename T::ConstSharedPtr&) override {
-            throw std::runtime_error("FilterChainNode does not support shared_ptr publications");
-        }
-
-        void publishReference(const T& msg) override {
-            this->outputPublisher->publish(msg);
-        }
-
-    private:
-        std::shared_ptr<rclcpp::Subscription<T>> inputSubscriber;
-        std::shared_ptr<rclcpp::Publisher<T>> outputPublisher;
     };
 
     template <typename T, typename Base = FilterChainBase<T>>
@@ -116,8 +56,8 @@ namespace sensor_filters {
                 return CallbackReturn::ERROR;
             }
 
-            advertise();
-            subscribe();
+            this->advertise();
+            this->subscribe();
 
             return CallbackReturn::SUCCESS;
         }
@@ -137,8 +77,8 @@ namespace sensor_filters {
         CallbackReturn on_cleanup(const rclcpp_lifecycle::State&) override {
             // reset state to before on_configure()
             this->filterChain.clear();
-            outputPublisher.reset();
-            inputSubscriber.reset();
+            this->outputPublisher.reset();
+            this->inputSubscriber.reset();
 
             return CallbackReturn::SUCCESS;
         }
@@ -157,73 +97,6 @@ namespace sensor_filters {
 
             return CallbackReturn::SUCCESS;
         }
-
-    protected:
-        bool validatePublicationType() const override {
-            return this->options.publicationType != MessagePassingType::SHARED_PTR;
-        }
-
-        void advertise() override {
-            this->outputPublisher = create_publisher<T>("output", this->options.outputQueueSize);
-        }
-
-        void subscribe() override {
-            switch (this->options.subscriptionType) {
-                case MessagePassingType::UNIQUE_PTR:
-                {
-                    this->inputSubscriber = create_subscription<T>(
-                        "input", this->options.inputQueueSize,
-                        [this](typename T::UniquePtr msg) {
-                            FilterChainBase<T>::callbackUnique(std::move(msg));
-                        }
-                    );
-                    break;
-                }
-                case MessagePassingType::SHARED_PTR:
-                {
-                    this->inputSubscriber = create_subscription<T>(
-                        "input", this->options.inputQueueSize,
-                        [this](const typename T::ConstSharedPtr& msg) {
-                            FilterChainBase<T>::callbackShared(msg);
-                        }
-                    );
-                    break;
-                }
-                case MessagePassingType::REFERENCE:
-                {
-                    this->inputSubscriber = create_subscription<T>(
-                        "input", this->options.inputQueueSize,
-                        [this](const T& msg) {
-                            FilterChainBase<T>::callbackReference(msg);
-                        });
-                    break;
-                }
-                default:
-                    assert(false && "Unexpected subscription type");
-            }
-        }
-
-        void publishUnique(typename T::UniquePtr msg) override {
-            if (!this->is_activated())
-                return;
-
-            this->outputPublisher->publish(std::move(msg));
-        }
-
-        void publishShared(const typename T::ConstSharedPtr&) override {
-            throw std::runtime_error("LifeCycleFilterChainNode does not support shared_ptr publications");
-        }
-
-        void publishReference(const T& msg) override {
-            if (!this->is_activated())
-                return;
-
-            this->outputPublisher->publish(msg);
-        }
-
-    private:
-        std::shared_ptr<rclcpp::Subscription<T>> inputSubscriber;
-        std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<T>> outputPublisher;
     };
 
 }

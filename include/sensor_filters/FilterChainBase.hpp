@@ -22,7 +22,8 @@ namespace sensor_filters {
     using RequiredInterfaces = rclcpp::node_interfaces::NodeInterfaces<
         rclcpp::node_interfaces::NodeBaseInterface,
         rclcpp::node_interfaces::NodeParametersInterface,
-        rclcpp::node_interfaces::NodeLoggingInterface
+        rclcpp::node_interfaces::NodeLoggingInterface,
+        rclcpp::node_interfaces::NodeTopicsInterface
     >;
 
     enum class MessagePassingType {
@@ -80,9 +81,12 @@ namespace sensor_filters {
 
         filters::FilterChain<T> filterChain;
         std::string messageType;
-        T msg;
+        T cachedMsg;
 
         rclcpp::Clock wallClock {RCL_SYSTEM_TIME};
+
+        std::shared_ptr<rclcpp::Subscription<T>> inputSubscriber;
+        std::shared_ptr<rclcpp::Publisher<T>> outputPublisher;
 
     public:
         FilterChainBase(
@@ -138,15 +142,69 @@ namespace sensor_filters {
         }
 
     protected:
-        virtual void advertise() = 0;
+        virtual void advertise()
+        {
+            this->outputPublisher = rclcpp::create_publisher<T>(this->nodeInterfaces, "output", rclcpp::QoS(this->options.outputQueueSize));
+        }
 
-        virtual void subscribe() = 0;
+        virtual void subscribe()
+        {
+            switch (this->options.subscriptionType) {
+                case MessagePassingType::UNIQUE_PTR:
+                {
 
-        virtual void publishUnique(typename T::UniquePtr msg) = 0;
+                    this->inputSubscriber = rclcpp::create_subscription<T>(
+                        this->nodeInterfaces, "input", rclcpp::QoS(this->options.inputQueueSize),
+                        [this](typename T::UniquePtr msg) {
+                            FilterChainBase<T>::callbackUnique(std::move(msg));
+                        }
+                    );
+                    break;
+                }
+                case MessagePassingType::SHARED_PTR:
+                {
+                    this->inputSubscriber = rclcpp::create_subscription<T>(
+                        this->nodeInterfaces, "input", rclcpp::QoS(this->options.inputQueueSize),
+                        [this](const typename T::ConstSharedPtr& msg) {
+                            FilterChainBase<T>::callbackShared(msg);
+                        }
+                    );
+                    break;
+                }
+                case MessagePassingType::REFERENCE:
+                {
+                    this->inputSubscriber = rclcpp::create_subscription<T>(
+                        this->nodeInterfaces, "input", rclcpp::QoS(this->options.inputQueueSize),
+                        [this](const T& msg) {
+                            FilterChainBase<T>::callbackReference(msg);
+                        });
+                    break;
+                }
+                default:
+                    assert(false && "Unexpected subscription type");
+            }
+        }
 
-        virtual void publishShared(const typename T::ConstSharedPtr& msg) = 0;
+        virtual void publishUnique(typename T::UniquePtr msg)
+        {
+            if (!this->is_activated())
+                return;
 
-        virtual void publishReference(const T& msg) = 0;
+            this->outputPublisher->publish(std::move(msg));
+        }
+
+        virtual void publishShared(const typename T::ConstSharedPtr&)
+        {
+            throw std::runtime_error("FilterChainBase does not support shared_ptr publications");
+        }
+
+        virtual void publishReference(const T& msg)
+        {
+            if (!this->is_activated())
+                return;
+
+            this->outputPublisher->publish(msg);
+        }
 
         virtual bool validateSubscriptionType() const
         {
@@ -155,7 +213,7 @@ namespace sensor_filters {
 
         virtual bool validatePublicationType() const
         {
-            return true;
+            return this->options.publicationType != MessagePassingType::SHARED_PTR;
         }
 
         virtual void callbackUnique(typename T::UniquePtr msgIn) {
@@ -192,8 +250,8 @@ namespace sensor_filters {
                 }
                 case MessagePassingType::REFERENCE:
                 {
-                    if (this->filter(msgIn, this->msg))
-                        this->publishReference(this->msg);
+                    if (this->filter(msgIn, this->cachedMsg))
+                        this->publishReference(this->cachedMsg);
                     break;
                 }
                 default:
