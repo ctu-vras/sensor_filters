@@ -140,7 +140,7 @@ function(generate_filter_chain_source NODE_NAME)
                 -D "HEADER_NAME=${HEADER_NAME}"
                 -D "BASE_FILTER=${BASE_FILTER}"
                 -D "CLASS_NAME=${LIFECYCLE_CLASS_NAME}"
-                -D "NODE_NAME=${LIFECYCLE_NODE_NAME}"
+                -D "NODE_NAME=${NODE_NAME}"  # lifecycle and normal nodes use the same name for interchangeability
                 -D "OUTPUT_FILE=${LIFECYCLE_OUTPUT_FILE}"
                 -D "LIFECYCLE=ON"
                 -P "${CMAKE_SOURCE_DIR}/cmake/GenerateFilterChainNode.cmake"
