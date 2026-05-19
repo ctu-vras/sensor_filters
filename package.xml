@@ -18,20 +18,19 @@ SPDX-FileCopyrightText: Czech Technical University in Prague
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>filters</depend>
+  <depend>image_transport</depend>
+  <depend>point_cloud_transport</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
     <depend>rclcpp_lifecycle</depend>
+    <depend>rosidl_runtime_cpp</depend>
     <depend>lifecycle_msgs</depend>
   <depend>sensor_msgs</depend>
 
     <build_depend>boost</build_depend>
   <build_depend>backward_ros</build_depend>
-  <build_depend>image_transport</build_depend>
-  <build_depend>point_cloud_transport</build_depend>
 
   <exec_depend>backward_ros</exec_depend>
-  <exec_depend>image_transport</exec_depend>
-  <exec_depend>point_cloud_transport</exec_depend>
 
   <!--test_depend>cras_lint</test_depend-->  <!-- TODO enable linting -->
 

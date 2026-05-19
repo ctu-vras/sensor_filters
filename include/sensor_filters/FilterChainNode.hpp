@@ -17,9 +17,9 @@ namespace sensor_filters {
     class FilterChainNode : public rclcpp::Node {
     public:
         // TODO 2026-03-16 (solonovamax): support parameter callback
-        FilterChainNode(const std::string& messageType, const std::string& name,
-            const rclcpp::NodeOptions& options = rclcpp::NodeOptions(), const FilterChainOptions& defaultChainOptions = {}) :
-            rclcpp::Node(name, options), filterChain(std::make_unique<Base>(*this, messageType, name, defaultChainOptions))
+        explicit FilterChainNode(const std::string& name, const rclcpp::NodeOptions& options = rclcpp::NodeOptions(),
+            const FilterChainOptions& defaultChainOptions = Base::DEFAULT_CHAIN_OPTIONS) :
+            rclcpp::Node(name, options), filterChain(std::make_unique<Base>(*this, name, defaultChainOptions))
         {
             this->filterChain->on_configure();
             this->filterChain->on_activate();
@@ -40,9 +40,10 @@ namespace sensor_filters {
     class LifecycleFilterChainNode : public rclcpp_lifecycle::LifecycleNode {
     public:
         // TODO 2026-03-16 (solonovamax): support parameter callback
-        LifecycleFilterChainNode(const std::string& messageType, const std::string& name,
-            const rclcpp::NodeOptions& options = rclcpp::NodeOptions(), const FilterChainOptions& defaultChainOptions = {}) :
-            rclcpp_lifecycle::LifecycleNode(name, options), filterChain(std::make_unique<Base>(*this, messageType, name, defaultChainOptions))
+        explicit LifecycleFilterChainNode(const std::string& name,
+            const rclcpp::NodeOptions& options = rclcpp::NodeOptions(),
+            const FilterChainOptions& defaultChainOptions = Base::DEFAULT_CHAIN_OPTIONS) :
+            LifecycleNode(name, options), filterChain(std::make_unique<Base>(*this, name, defaultChainOptions))
         {
         }
 

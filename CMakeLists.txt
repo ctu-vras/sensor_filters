@@ -13,15 +13,16 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif ()
 
 set(DEPENDENCIES
+        filters
+        image_transport
+        point_cloud_transport
         rclcpp
         rclcpp_components
         rclcpp_lifecycle
-        filters
+        rosidl_runtime_cpp
         sensor_msgs
 )
 set(BUILD_ONLY_DEPENDENCIES
-        image_transport
-        point_cloud_transport
         backward_ros
 )
 
@@ -42,29 +43,33 @@ set(LIBRARY_TARGETS
         rclcpp::rclcpp
         rclcpp_components::component
         rclcpp_lifecycle::rclcpp_lifecycle
+        rosidl_runtime_cpp::rosidl_runtime_cpp
         filters::filter_chain
-        image_transport::image_transport
-        point_cloud_transport::point_cloud_transport
         ${sensor_msgs_TARGETS}
 )
 
 function(add_filter_chain_node TARGET_NAME CLASS_NAME FILENAME)
+    set(options)
+    set(oneValueArgs BASE_FILTER_LIB)
+    set(multiValueArgs)
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+      "${options}" "${oneValueArgs}" "${multiValueArgs}"
+    )
+
+    set(BASE_FILTER_LIB "${arg_BASE_FILTER_LIB}")
+
     list(APPEND NODE_TARGETS ${TARGET_NAME})
 
     add_library("${TARGET_NAME}_component" SHARED "${FILENAME}")
     rclcpp_components_register_node("${TARGET_NAME}_component" PLUGIN "sensor_filters::${CLASS_NAME}" EXECUTABLE ${TARGET_NAME})
     target_link_libraries("${TARGET_NAME}_component" PRIVATE ${LIBRARY_TARGETS})
+    if(BASE_FILTER_LIB)
+        target_link_libraries("${TARGET_NAME}_component" PRIVATE ${BASE_FILTER_LIB})
+    endif()
     target_include_directories(${TARGET_NAME}_component PRIVATE
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
       $<INSTALL_INTERFACE:include>
     )
-
-    if(image_transport_VERSION VERSION_LESS 6.4.0)
-        target_compile_definitions("${TARGET_NAME}_component" PRIVATE IMAGE_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE)
-    endif()
-    if(point_cloud_transport_VERSION VERSION_LESS 5.2.0)
-        target_compile_definitions("${TARGET_NAME}_component" PRIVATE POINT_CLOUD_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE)
-    endif()
 
     install(TARGETS "${TARGET_NAME}_component"
             ARCHIVE DESTINATION lib
@@ -75,13 +80,14 @@ endfunction()
 
 function(generate_filter_chain_source NODE_NAME)
     set(options NO_LIFECYCLE)
-    set(oneValueArgs HEADER_NAME MESSAGE_TYPE BASE_FILTER)
+    set(oneValueArgs HEADER_NAME MESSAGE_TYPE BASE_FILTER BASE_FILTER_LIB)
     set(multiValueArgs SOURCES)
     cmake_parse_arguments(PARSE_ARGV 0 arg
             "${options}" "${oneValueArgs}" "${multiValueArgs}"
     )
 
     set(BASE_FILTER "${arg_BASE_FILTER}")
+    set(BASE_FILTER_LIB "${arg_BASE_FILTER_LIB}")
     set(HEADER_NAME "${arg_HEADER_NAME}")
     set(MESSAGE_TYPE "${arg_MESSAGE_TYPE}")
     set(SOURCES "${arg_SOURCES}")
@@ -112,7 +118,7 @@ function(generate_filter_chain_source NODE_NAME)
             VERBATIM
     )
 
-    add_filter_chain_node(${NODE_NAME} "${CLASS_NAME}" "${OUTPUT_FILE}")
+    add_filter_chain_node(${NODE_NAME} "${CLASS_NAME}" "${OUTPUT_FILE}" BASE_FILTER_LIB "${BASE_FILTER_LIB}")
 
     if (SOURCES)
         target_sources(${NODE_NAME}_component PRIVATE ${SOURCES})
@@ -144,7 +150,7 @@ function(generate_filter_chain_source NODE_NAME)
                 VERBATIM
         )
 
-        add_filter_chain_node(${LIFECYCLE_NODE_NAME} "${LIFECYCLE_CLASS_NAME}" "${LIFECYCLE_OUTPUT_FILE}")
+        add_filter_chain_node(${LIFECYCLE_NODE_NAME} "${LIFECYCLE_CLASS_NAME}" "${LIFECYCLE_OUTPUT_FILE}" BASE_FILTER_LIB "${BASE_FILTER_LIB}")
 
         if (SOURCES)
             target_sources(${LIFECYCLE_NODE_NAME}_component PRIVATE ${SOURCES})
@@ -152,12 +158,36 @@ function(generate_filter_chain_source NODE_NAME)
     endif ()
 endfunction()
 
-add_library(${PROJECT_NAME}_node_helper SHARED src/NodeHelper.cpp)
+# cannot be SHARED, we don't want to export this library; OBJECT is similar to SHARED but not exported and has no .so
+add_library(${PROJECT_NAME}_node_helper OBJECT src/NodeHelper.cpp)
 target_link_libraries(${PROJECT_NAME}_node_helper PUBLIC rclcpp::rclcpp)
 target_include_directories(${PROJECT_NAME}_node_helper PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
+set_target_properties(${PROJECT_NAME}_node_helper PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+add_library(${PROJECT_NAME}_image_filter_chain_base SHARED src/ImageFilterChainBase.cpp)
+target_link_libraries(${PROJECT_NAME}_image_filter_chain_base PUBLIC ${LIBRARY_TARGETS} image_transport::image_transport)
+target_link_libraries(${PROJECT_NAME}_image_filter_chain_base PRIVATE ${PROJECT_NAME}_node_helper)
+target_include_directories(${PROJECT_NAME}_image_filter_chain_base PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+if(image_transport_VERSION VERSION_LESS 6.4.0)
+    target_compile_definitions(${PROJECT_NAME}_image_filter_chain_base PUBLIC IMAGE_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE)
+endif()
+
+add_library(${PROJECT_NAME}_pointcloud2_filter_chain_base SHARED src/PointCloud2FilterChainBase.cpp)
+target_link_libraries(${PROJECT_NAME}_pointcloud2_filter_chain_base PUBLIC ${LIBRARY_TARGETS} point_cloud_transport::point_cloud_transport)
+target_link_libraries(${PROJECT_NAME}_pointcloud2_filter_chain_base PRIVATE ${PROJECT_NAME}_node_helper)
+target_include_directories(${PROJECT_NAME}_pointcloud2_filter_chain_base PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+if(point_cloud_transport_VERSION VERSION_LESS 5.2.0)
+    target_compile_definitions(${PROJECT_NAME}_pointcloud2_filter_chain_base PUBLIC POINT_CLOUD_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE)
+endif()
 
 generate_filter_chain_source("compressed_image" HEADER_NAME "compressed_image" MESSAGE_TYPE "CompressedImage")
 generate_filter_chain_source("imu" HEADER_NAME "imu" MESSAGE_TYPE "Imu")
@@ -170,12 +200,11 @@ generate_filter_chain_source("pointcloud" HEADER_NAME "point_cloud" MESSAGE_TYPE
 generate_filter_chain_source("range" HEADER_NAME "range" MESSAGE_TYPE "Range")
 generate_filter_chain_source("relative_humidity" HEADER_NAME "relative_humidity" MESSAGE_TYPE "RelativeHumidity")
 generate_filter_chain_source("temperature" HEADER_NAME "temperature" MESSAGE_TYPE "Temperature")
-add_filter_chain_node("image_filter_chain" "ImageFilterChainNode" src/ImageFilterChainNode.cpp)
-target_link_libraries(image_filter_chain_component PRIVATE ${PROJECT_NAME}_node_helper)
-rclcpp_components_register_node("image_filter_chain_component" PLUGIN "sensor_filters::LifecycleImageFilterChainNode" EXECUTABLE image_filter_chain_lifecycle)
-add_filter_chain_node("pointcloud2_filter_chain" "PointCloud2FilterChainNode" src/PointCloud2FilterChainNode.cpp)
-target_link_libraries(pointcloud2_filter_chain_component PRIVATE ${PROJECT_NAME}_node_helper)
-rclcpp_components_register_node("pointcloud2_filter_chain_component" PLUGIN "sensor_filters::LifecyclePointCloud2FilterChainNode" EXECUTABLE pointcloud2_filter_chain_lifecycle)
+# special cases with transport-based pub/sub
+generate_filter_chain_source("image" HEADER_NAME "image" MESSAGE_TYPE "Image"
+    BASE_FILTER ImageFilterChainBase BASE_FILTER_LIB ${PROJECT_NAME}_image_filter_chain_base)
+generate_filter_chain_source("pointcloud2" HEADER_NAME "point_cloud2" MESSAGE_TYPE "PointCloud2"
+    BASE_FILTER PointCloud2FilterChainBase BASE_FILTER_LIB ${PROJECT_NAME}_pointcloud2_filter_chain_base)
 
 set(filters
         ChangeHeaderFilter
@@ -193,13 +222,7 @@ foreach (filter IN LISTS filters)
     pluginlib_export_plugin_description_file(filters ${filter}.xml)
 endforeach ()
 
-install(TARGETS ${PROJECT_NAME}_node_helper
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-)
-
-install(TARGETS ${FILTER_LIBRARIES}
+install(TARGETS ${FILTER_LIBRARIES} ${PROJECT_NAME}_image_filter_chain_base ${PROJECT_NAME}_pointcloud2_filter_chain_base
         EXPORT export_${PROJECT_NAME}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib

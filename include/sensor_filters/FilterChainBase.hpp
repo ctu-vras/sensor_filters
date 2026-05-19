@@ -16,6 +16,7 @@
 #include <rclcpp/clock.hpp>
 #include <rclcpp/time.hpp>
 #include <rclcpp_lifecycle/managed_entity.hpp>
+#include <rosidl_runtime_cpp/traits.hpp>
 #include <sensor_filters/NodeInterfaces.hpp>
 
 namespace sensor_filters {
@@ -76,8 +77,8 @@ namespace sensor_filters {
 
         RequiredInterfaces nodeInterfaces;
 
-        filters::FilterChain<T> filterChain;
         std::string messageType;
+        filters::FilterChain<T> filterChain;
         T cachedMsg;
 
         rclcpp::Clock wallClock {RCL_SYSTEM_TIME};
@@ -85,12 +86,12 @@ namespace sensor_filters {
     public:
         FilterChainBase(
             RequiredInterfaces nodeInterfaces,
-            const std::string& messageType,
             std::string filterChainNamespace,
             const FilterChainOptions& defaultOptions = {}
         ) : filterChainNamespace(std::move(filterChainNamespace)),
             defaultOptions(defaultOptions), options(defaultOptions),
-            nodeInterfaces(std::move(nodeInterfaces)), filterChain(messageType), messageType(messageType)
+            nodeInterfaces(std::move(nodeInterfaces)), messageType(rosidl_generator_traits::data_type<T>()),
+            filterChain(this->messageType)
         {
             const auto params = this->nodeInterfaces.get_node_parameters_interface();
             params->declare_parameter(
@@ -246,9 +247,11 @@ namespace sensor_filters {
     template <typename T>
     class FilterChainNodeBase : public FilterChainBase<T> {
     public:
-        explicit FilterChainNodeBase(RequiredInterfaces nodeInterfaces, const std::string& messageType,
-            const std::string& name, const FilterChainOptions& defaultChainOptions = {}) :
-            FilterChainBase<T>(nodeInterfaces, messageType, name, defaultChainOptions)
+        constexpr static FilterChainOptions DEFAULT_CHAIN_OPTIONS = {};
+
+        explicit FilterChainNodeBase(RequiredInterfaces nodeInterfaces, const std::string& name,
+            const FilterChainOptions& defaultChainOptions = DEFAULT_CHAIN_OPTIONS) :
+            FilterChainBase<T>(nodeInterfaces, name, defaultChainOptions)
         {
         }
 
