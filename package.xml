@@ -23,10 +23,12 @@ SPDX-FileCopyrightText: Czech Technical University in Prague
   <depend>sensor_msgs</depend>
 
   <build_depend>image_transport</build_depend>
+  <build_depend>boost</build_depend>
   <build_depend>pluginlib</build_depend>
   <build_depend>point_cloud_transport</build_depend>
 
   <exec_depend>image_transport</exec_depend>
+  <exec_depend>boost</exec_depend>
   <exec_depend>pluginlib</exec_depend>
   <exec_depend>point_cloud_transport</exec_depend>
 
