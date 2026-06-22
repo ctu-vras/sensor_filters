@@ -16,6 +16,7 @@ set(DEPENDENCIES
         filters
         image_transport
         point_cloud_transport
+        pluginlib
         rclcpp
         rclcpp_components
         rclcpp_lifecycle
@@ -28,7 +29,7 @@ set(BUILD_ONLY_DEPENDENCIES
 
 find_package(ament_cmake REQUIRED)
 
-find_package(Boost CONFIG)
+find_package(Boost CONFIG REQUIRED)
 
 foreach (dependency IN ITEMS ${DEPENDENCIES})
     find_package(${dependency} REQUIRED)
@@ -40,6 +41,7 @@ endforeach ()
 
 set(LIBRARY_TARGETS
         Boost::boost
+        pluginlib::pluginlib
         rclcpp::rclcpp
         rclcpp_components::component
         rclcpp_lifecycle::rclcpp_lifecycle

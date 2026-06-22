@@ -2,10 +2,13 @@
 // SPDX-FileCopyrightText: Czech Technical University in Prague
 
 #include <chrono>
+#include <cmath>
+#include <limits>
 #include <optional>
+#include <string>
+
 #include <filters/filter_chain.hpp>
 #include <rclcpp/rclcpp.hpp>
-
 namespace sensor_filters {
     template <typename T>
     class ChangeHeader : public filters::FilterBase<T> {
@@ -65,8 +68,6 @@ namespace sensor_filters {
         std::optional<std::string> newFrameIdPrefix;
         std::optional<std::string> newFrameIdSuffix;
 
-        std::optional<uint32_t> newSeqAbs;
-        std::optional<uint32_t> newSeqRel;
 
         std::optional<rclcpp::Time> newStampAbs;
         std::optional<rclcpp::Duration> newStampRel;

@@ -39,6 +39,13 @@ SPDX-FileCopyrightText: Czech Technical University in Prague
                 Change the header of a message.
             </description>
         </class>
+        <class name="sensor_filters/ChangeHeader_MultiEchoLaserScan"
+               type="sensor_filters::ChangeHeader&lt;sensor_msgs::msg::MultiEchoLaserScan&gt;"
+               base_class_type="filters::FilterBase&lt;sensor_msgs::msg::MultiEchoLaserScan&gt;">
+            <description>
+                Change the header of a message.
+            </description>
+        </class>
         <class name="sensor_filters/ChangeHeader_MagneticField"
                type="sensor_filters::ChangeHeader&lt;sensor_msgs::msg::MagneticField&gt;"
                base_class_type="filters::FilterBase&lt;sensor_msgs::msg::MagneticField&gt;">

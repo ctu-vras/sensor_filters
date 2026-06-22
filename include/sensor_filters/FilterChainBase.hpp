@@ -8,6 +8,12 @@
  * \brief Base for all sensor filter chains.
  */
 
+#include <algorithm>
+#include <cassert>
+#include <cctype>
+#include <memory>
+#include <stdexcept>
+
 #include <string>
 #include <utility>
 

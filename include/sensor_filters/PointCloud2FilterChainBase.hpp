@@ -7,6 +7,8 @@
 #include <string>
 
 #include <point_cloud_transport/point_cloud_transport.hpp>
+#include <rclcpp/node.hpp>
+#include <sensor_filters/FilterChainBase.hpp>
 #include <sensor_filters/NodeInterfaces.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
