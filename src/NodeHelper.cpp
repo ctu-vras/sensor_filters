@@ -7,13 +7,15 @@
  *        This is needed because shared_from_this() can't be used in node constructors.
  */
 
+#include <sstream>
+#define private public
+#include <rclcpp/node.hpp>
+#undef private
+
 #include <algorithm>
 #include <cstdint>
 #include <memory>
 #include <string>
-#define private public
-#include <rclcpp/node.hpp>
-#undef private
 
 #include <rclcpp/node_interfaces/node_interfaces.hpp>
 
