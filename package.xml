@@ -27,10 +27,12 @@ SPDX-FileCopyrightText: Czech Technical University in Prague
     <depend>lifecycle_msgs</depend>
   <depend>sensor_msgs</depend>
 
-    <build_depend>boost</build_depend>
+  <build_depend>boost</build_depend>
   <build_depend>backward_ros</build_depend>
+  <build_depend>pluginlib</build_depend>
 
   <exec_depend>backward_ros</exec_depend>
+  <exec_depend>pluginlib</exec_depend>
 
   <!--test_depend>cras_lint</test_depend-->  <!-- TODO enable linting -->
 
