@@ -196,7 +196,8 @@ generate_filter_chain_source("fluid_pressure" HEADER_NAME "fluid_pressure" MESSA
 generate_filter_chain_source("imu" HEADER_NAME "imu" MESSAGE_TYPE "Imu")
 generate_filter_chain_source("illuminance" HEADER_NAME "illuminance" MESSAGE_TYPE "Illuminance")
 generate_filter_chain_source("joy" HEADER_NAME "joy" MESSAGE_TYPE "Joy")
-generate_filter_chain_source("joy_feedback_array" HEADER_NAME "joy_feedback_array" MESSAGE_TYPE "JoyFeedbackArray")
+# Does not have header
+# generate_filter_chain_source("joy_feedback_array" HEADER_NAME "joy_feedback_array" MESSAGE_TYPE "JoyFeedbackArray")
 generate_filter_chain_source("scan" HEADER_NAME "laser_scan" MESSAGE_TYPE "LaserScan")
 generate_filter_chain_source("magnetic_field" HEADER_NAME "magnetic_field" MESSAGE_TYPE "MagneticField")
 generate_filter_chain_source("multi_echo_scan" HEADER_NAME "multi_echo_laser_scan" MESSAGE_TYPE "MultiEchoLaserScan")
