@@ -32,6 +32,8 @@
 #include <sensor_msgs/msg/temperature.hpp>
 #include <sensor_msgs/msg/time_reference.hpp>
 
+// Keep these lists in sync with those in cmake/UniversalFilter.cmake
+
 //! \brief All "top-level" message types from sensor_msgs that contain a header.
 #define SENSOR_MSGS_SEQ \
     (sensor_msgs::msg::BatteryState) \
@@ -69,9 +71,11 @@
     BOOST_PP_SEQ_FOR_EACH(REGISTER_TEMPLATED_FILTER_FOR_MSG_BOOST_PP_SEQ_HELPER, filter, msg_seq)
 
 //! \brief Register the given templated filters::FilterBase implementation for all sensor_msgs messages with header.
+//! \note Don't forget to register the filters by calling register_universal_filter_description_file() CMake macro.
 #define REGISTER_UNIVERSAL_SENSOR_MSGS_FILTER(filter) \
     REGISTER_TEMPLATED_FILTER_FOR_MSGS(filter, SENSOR_MSGS_SEQ)
 
 //! \brief Register the given templated filters::FilterBase implementation for all sensor_msgs messages without header.
+//! \note Don't forget to register the filters by calling register_universal_filter_description_file() CMake macro.
 #define REGISTER_NO_HEADER_SENSOR_MSGS_FILTER(filter) \
     REGISTER_TEMPLATED_FILTER_FOR_MSGS(filter, SENSOR_MSGS_NO_HEADER_SEQ)

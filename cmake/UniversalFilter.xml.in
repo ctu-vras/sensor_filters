@@ -1,0 +1,9 @@
+<!--
+SPDX-License-Identifier: BSD-3-Clause
+SPDX-FileCopyrightText: Czech Technical University in Prague
+-->
+<class_libraries>
+    <library path="@FILTER_TARGET@">
+        @UNIVERSAL_FILTER_CLASSES@
+    </library>
+</class_libraries>

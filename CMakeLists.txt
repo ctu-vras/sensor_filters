@@ -50,13 +50,14 @@ set(LIBRARY_TARGETS
         ${sensor_msgs_TARGETS}
 )
 
-function(add_filter_chain_node TARGET_NAME CLASS_NAME FILENAME)
+macro(add_filter_chain_node arg_TARGET_NAME arg_CLASS_NAME arg_FILENAME)
     set(options)
     set(oneValueArgs BASE_FILTER_LIB)
     set(multiValueArgs)
-    cmake_parse_arguments(PARSE_ARGV 0 arg
-      "${options}" "${oneValueArgs}" "${multiValueArgs}"
-    )
+    cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    set(TARGET_NAME "${arg_TARGET_NAME}")
+    set(CLASS_NAME "${arg_CLASS_NAME}")
+    set(FILENAME "${arg_FILENAME}")
 
     set(BASE_FILTER_LIB "${arg_BASE_FILTER_LIB}")
 
@@ -78,15 +79,14 @@ function(add_filter_chain_node TARGET_NAME CLASS_NAME FILENAME)
             LIBRARY DESTINATION lib
             RUNTIME DESTINATION bin
     )
-endfunction()
+endmacro()
 
-function(generate_filter_chain_source NODE_NAME)
+macro(generate_filter_chain_source arg_NODE_NAME)
     set(options NO_LIFECYCLE)
     set(oneValueArgs HEADER_NAME MESSAGE_TYPE BASE_FILTER BASE_FILTER_LIB)
     set(multiValueArgs SOURCES)
-    cmake_parse_arguments(PARSE_ARGV 0 arg
-            "${options}" "${oneValueArgs}" "${multiValueArgs}"
-    )
+    cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    set(NODE_NAME "${arg_NODE_NAME}")
 
     set(BASE_FILTER "${arg_BASE_FILTER}")
     set(BASE_FILTER_LIB "${arg_BASE_FILTER_LIB}")
@@ -158,7 +158,7 @@ function(generate_filter_chain_source NODE_NAME)
             target_sources(${LIFECYCLE_NODE_NAME}_component PRIVATE ${SOURCES})
         endif ()
     endif ()
-endfunction()
+endmacro()
 
 # cannot be SHARED, we don't want to export this library; OBJECT is similar to SHARED but not exported and has no .so
 add_library(${PROJECT_NAME}_node_helper OBJECT src/NodeHelper.cpp)
@@ -216,21 +216,22 @@ generate_filter_chain_source("image" HEADER_NAME "image" MESSAGE_TYPE "Image"
 generate_filter_chain_source("pointcloud2" HEADER_NAME "point_cloud2" MESSAGE_TYPE "PointCloud2"
     BASE_FILTER PointCloud2FilterChainBase BASE_FILTER_LIB ${PROJECT_NAME}_pointcloud2_filter_chain_base)
 
-set(filters
-        ChangeHeaderFilter
-)
+# Register universal filters
 
-foreach (filter IN LISTS filters)
-    list(APPEND FILTER_LIBRARIES ${filter})
+include(cmake/UniversalFilter.cmake)
 
-    add_library(${filter} SHARED src/filters/${filter}.cpp)
-    target_link_libraries(${filter} PRIVATE ${LIBRARY_TARGETS})
-    target_include_directories(${filter} PRIVATE
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-      $<INSTALL_INTERFACE:include>
-    )
-    pluginlib_export_plugin_description_file(filters ${filter}.xml)
-endforeach ()
+macro(register_universal_filter FILTER_NAME FILTER_DESCRIPTION)
+    set(FILTER_TARGET "${FILTER_NAME}Filter")
+    list(APPEND FILTER_LIBRARIES ${FILTER_TARGET})
+
+    add_library(${FILTER_TARGET} SHARED src/filters/${FILTER_NAME}.cpp)
+    target_link_libraries(${FILTER_TARGET} PRIVATE ${LIBRARY_TARGETS})
+    target_include_directories(${FILTER_TARGET} PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
+
+    register_universal_filter_description_file("${FILTER_NAME}" "${FILTER_DESCRIPTION}" FILTER_TARGET "${FILTER_TARGET}")
+endmacro()
+
+register_universal_filter(ChangeHeader "Change the header of a message.")
 
 install(TARGETS ${FILTER_LIBRARIES} ${PROJECT_NAME}_image_filter_chain_base ${PROJECT_NAME}_pointcloud2_filter_chain_base
         EXPORT export_${PROJECT_NAME}

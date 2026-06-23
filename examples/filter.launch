@@ -14,7 +14,7 @@ timestamps.
     <let name="lifecycle_suffix" value="" unless="$(var lifecycle)" />
     <let name="lifecycle_suffix" value="_lifecycle" if="$(var lifecycle)" />
 
-    <node pkg="sensor_filters" exec="scan_filter_chain$(var lifecycle_suffix)" output="screen" name="laser_filter" args="--ros-args --log-level $(var log_level)">
+    <node pkg="sensor_filters" exec="laser_scan_filter_chain$(var lifecycle_suffix)" output="screen" name="laser_filter" args="--ros-args --log-level $(var log_level)">
         <remap from="input" to="base_scan" />
         <remap from="output" to="base_scan_filtered" />
         <param from="$(dirname)/filter.yaml" allow_substs="true" />

@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# SPDX-FileCopyrightText: Czech Technical University in Prague
+
 set(MESSAGE_HEADER "sensor_msgs/msg/${HEADER_NAME}.hpp")
 
 if (BASE_FILTER)

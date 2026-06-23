@@ -1,0 +1,5 @@
+        <class name="@FILTER_PREFIX@/@FILTER_NAME@_@MESSAGE_TYPE@"
+               type="@FILTER_PREFIX@::@FILTER_NAME@&lt;@MESSAGE_TYPE_PREFIX@@MESSAGE_TYPE@&gt;"
+               base_class_type="filters::FilterBase&lt;@MESSAGE_TYPE_PREFIX@@MESSAGE_TYPE@&gt;">
+            <description>@FILTER_DESCRIPTION@</description>
+        </class>
