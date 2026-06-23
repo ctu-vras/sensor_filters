@@ -44,12 +44,18 @@ namespace sensor_filters {
     void ImageFilterChainBase::advertise(const std::string& topic)
     {
         const auto topics = this->nodeInterfaces.get_node_topics_interface();
+#ifndef IMAGE_TRANSPORT_PUB_OPTIONS_NOT_AVAILABLE
         rclcpp::PublisherOptions opts;
         opts.qos_overriding_options = this->qosOverrides;
+#endif
 
 #ifdef IMAGE_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE
         this->itPublisher = image_transport::create_publisher(this->nodePtr.get(), topics->resolve_topic_name(topic),
-            rclcpp::QoS(this->options.outputQueueSize).get_rmw_qos_profile(), opts);
+            rclcpp::QoS(this->options.outputQueueSize).get_rmw_qos_profile()
+#ifndef IMAGE_TRANSPORT_PUB_OPTIONS_NOT_AVAILABLE
+            , opts
+#endif
+            );
 #else
         this->itPublisher = image_transport::create_publisher(this->nodeInterfaces, topics->resolve_topic_name(topic),
             rclcpp::QoS(this->options.outputQueueSize), opts);
