@@ -13,8 +13,8 @@
 #include <cctype>
 #include <memory>
 #include <stdexcept>
-
 #include <string>
+#include <type_traits>
 #include <utility>
 
 #include <filters/filter_chain.hpp>
@@ -69,6 +69,12 @@ namespace sensor_filters {
                 return "unknown";
         }
     }
+
+    template <typename, typename = void>
+    struct has_header : std::false_type {};
+
+    template <typename T>
+    struct has_header<T, std::void_t<decltype(std::declval<T>().header)>> : std::true_type {};
 
     template <typename T>
     class FilterChainBase : public rclcpp_lifecycle::SimpleManagedEntity {
@@ -240,8 +246,15 @@ namespace sensor_filters {
             const auto loggingInterface = this->nodeInterfaces.get_node_logging_interface();
             const auto start = this->wallClock.now();
             if (!this->filterChain.update(msgIn, msgOut)) {
-                RCLCPP_ERROR_THROTTLE(loggingInterface->get_logger(), this->wallClock, 1000, "Filtering data from time %i.%09i failed.",
-                                      msgIn.header.stamp.sec, msgIn.header.stamp.nanosec);
+                if constexpr (has_header<T>::value) {
+                    RCLCPP_ERROR_THROTTLE(loggingInterface->get_logger(), this->wallClock, 1000,
+                        "Filtering data by filter %s at time %i.%09i failed.", this->filterChainNamespace.c_str(),
+                        msgIn.header.stamp.sec, msgIn.header.stamp.nanosec);
+                }
+                else {
+                    RCLCPP_ERROR_THROTTLE(loggingInterface->get_logger(), this->wallClock, 1000,
+                        "Filtering data by filter %s failed.", this->filterChainNamespace.c_str());
+                }
                 return false;
             }
             const auto end = this->wallClock.now();

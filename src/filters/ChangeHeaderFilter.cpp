@@ -7,7 +7,7 @@
 #include <optional>
 #include <string>
 
-#include <filters/filter_chain.hpp>
+#include <filters/filter_base.hpp>
 #include <rclcpp/rclcpp.hpp>
 namespace sensor_filters {
     template <typename T>
