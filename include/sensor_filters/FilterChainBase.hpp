@@ -83,6 +83,17 @@ namespace sensor_filters {
         typedef T Message;
 
     protected:
+        constexpr static std::initializer_list<rclcpp::QosPolicyKind> qosOverrides = {
+            rclcpp::QosPolicyKind::Deadline,
+            rclcpp::QosPolicyKind::Depth,
+            rclcpp::QosPolicyKind::Durability,
+            rclcpp::QosPolicyKind::History,
+            rclcpp::QosPolicyKind::Lifespan,
+            rclcpp::QosPolicyKind::Liveliness,
+            rclcpp::QosPolicyKind::LivelinessLeaseDuration,
+            rclcpp::QosPolicyKind::Reliability,
+        };
+
         std::string filterChainNamespace;
         const FilterChainOptions defaultOptions;
         FilterChainOptions options;
@@ -271,17 +282,6 @@ namespace sensor_filters {
     public:
         constexpr static FilterChainOptions DEFAULT_CHAIN_OPTIONS = {};
 
-        constexpr static std::initializer_list<rclcpp::QosPolicyKind> qosOverrides = {
-            rclcpp::QosPolicyKind::Deadline,
-            rclcpp::QosPolicyKind::Depth,
-            rclcpp::QosPolicyKind::Durability,
-            rclcpp::QosPolicyKind::History,
-            rclcpp::QosPolicyKind::Lifespan,
-            rclcpp::QosPolicyKind::Liveliness,
-            rclcpp::QosPolicyKind::LivelinessLeaseDuration,
-            rclcpp::QosPolicyKind::Reliability,
-        };
-
         explicit FilterChainNodeBase(RequiredInterfaces nodeInterfaces, const std::string& name,
             const FilterChainOptions& defaultChainOptions = DEFAULT_CHAIN_OPTIONS) :
             FilterChainBase<T>(nodeInterfaces, name, defaultChainOptions)
@@ -292,7 +292,7 @@ namespace sensor_filters {
         void advertise(const std::string& topic) override
         {
             rclcpp::PublisherOptions opts;
-            opts.qos_overriding_options = qosOverrides;
+            opts.qos_overriding_options = this->qosOverrides;
 
             this->outputPublisher = rclcpp::create_publisher<T>(
                 this->nodeInterfaces, topic, rclcpp::QoS(this->options.outputQueueSize), opts);
@@ -306,7 +306,7 @@ namespace sensor_filters {
         void subscribe(const std::string& topic) override
         {
             rclcpp::SubscriptionOptions opts;
-            opts.qos_overriding_options = qosOverrides;
+            opts.qos_overriding_options = this->qosOverrides;
 
             switch (this->options.subscriptionType) {
                 case MessagePassingType::UNIQUE_PTR:

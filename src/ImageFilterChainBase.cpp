@@ -44,7 +44,16 @@ namespace sensor_filters {
     void ImageFilterChainBase::advertise(const std::string& topic)
     {
         const auto topics = this->nodeInterfaces.get_node_topics_interface();
-        this->itPublisher = this->it->advertise(topics->resolve_topic_name(topic), this->options.outputQueueSize);
+        rclcpp::PublisherOptions opts;
+        opts.qos_overriding_options = this->qosOverrides;
+
+#ifdef IMAGE_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE
+        this->itPublisher = image_transport::create_publisher(this->nodePtr.get(), topics->resolve_topic_name(topic),
+            rclcpp::QoS(this->options.outputQueueSize).get_rmw_qos_profile(), opts);
+#else
+        this->itPublisher = image_transport::create_publisher(this->nodeInterfaces, topics->resolve_topic_name(topic),
+            rclcpp::QoS(this->options.outputQueueSize), opts);
+#endif
     }
 
     void ImageFilterChainBase::unadvertise()
@@ -55,11 +64,14 @@ namespace sensor_filters {
     void ImageFilterChainBase::subscribe(const std::string& topic)
     {
         const auto topics = this->nodeInterfaces.get_node_topics_interface();
+        rclcpp::SubscriptionOptions opts;
+        opts.qos_overriding_options = this->qosOverrides;
+
         this->itSubscriber = this->it->subscribe(
             topics->resolve_topic_name(topic), this->options.inputQueueSize,
             [this](const sensor_msgs::msg::Image::ConstSharedPtr& msg) {
                 this->callbackShared(msg);
-            });
+            }, {}, nullptr, opts);
     }
 
     void ImageFilterChainBase::unsubscribe()
