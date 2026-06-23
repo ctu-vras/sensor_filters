@@ -25,3 +25,7 @@
         type: sensor_filters/ChangeHeader_LaserScan
         params:
           stamp_relative: -0.025
+    qos_overrides:
+      /base_scan:
+        subscription:
+          reliability: best_effort
