@@ -16,6 +16,7 @@
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include <filters/filter_chain.hpp>
 #include <rclcpp/node_interfaces/node_interfaces.hpp>
@@ -95,6 +96,8 @@ namespace sensor_filters {
         FilterChainOptions options;
 
         RequiredInterfaces nodeInterfaces;
+        rclcpp::PublisherOptions publisherOptions {};
+        rclcpp::SubscriptionOptions subscriptionOptions {};
 
         std::string messageType;
 
@@ -265,11 +268,8 @@ namespace sensor_filters {
     protected:
         void advertise(const std::string& topic) override
         {
-            rclcpp::PublisherOptions opts;
-            opts.qos_overriding_options = this->qosOverrides;
-
             this->outputPublisher = rclcpp::create_publisher<T>(
-                this->nodeInterfaces, topic, rclcpp::QoS(this->options.outputQueueSize), opts);
+                this->nodeInterfaces, topic, rclcpp::QoS(this->options.outputQueueSize), this->publisherOptions);
         }
 
         void unadvertise() override
@@ -279,9 +279,6 @@ namespace sensor_filters {
 
         void subscribe(const std::string& topic) override
         {
-            rclcpp::SubscriptionOptions opts;
-            opts.qos_overriding_options = this->qosOverrides;
-
             switch (this->options.subscriptionType) {
                 case MessagePassingType::UNIQUE_PTR:
                 {
@@ -290,8 +287,7 @@ namespace sensor_filters {
                         this->nodeInterfaces, topic, rclcpp::QoS(this->options.inputQueueSize),
                         [this](typename T::UniquePtr msg) {
                             FilterChainBase<T>::callbackUnique(std::move(msg));
-                        }, opts
-                    );
+                        }, this->subscriptionOptions);
                     break;
                 }
                 case MessagePassingType::SHARED_PTR:
@@ -300,8 +296,7 @@ namespace sensor_filters {
                         this->nodeInterfaces, topic, rclcpp::QoS(this->options.inputQueueSize),
                         [this](const typename T::ConstSharedPtr& msg) {
                             FilterChainBase<T>::callbackShared(msg);
-                        }, opts
-                    );
+                        }, this->subscriptionOptions);
                     break;
                 }
                 case MessagePassingType::REFERENCE:
@@ -310,7 +305,7 @@ namespace sensor_filters {
                         this->nodeInterfaces, topic, rclcpp::QoS(this->options.inputQueueSize),
                         [this](const T& msg) {
                             FilterChainBase<T>::callbackReference(msg);
-                        }, opts);
+                        }, this->subscriptionOptions);
                     break;
                 }
                 default:

@@ -41,11 +41,9 @@ namespace sensor_filters {
     void PointCloud2FilterChainBase::advertise(const std::string& topic)
     {
         const auto topics = this->nodeInterfaces.get_node_topics_interface();
-        rclcpp::PublisherOptions opts;
-        opts.qos_overriding_options = this->qosOverrides;
 
         this->pctPublisher = this->pct->advertise(
-            topics->resolve_topic_name(topic), this->options.outputQueueSize, opts);
+            topics->resolve_topic_name(topic), this->options.outputQueueSize, this->publisherOptions);
     }
 
     void PointCloud2FilterChainBase::unadvertise()
@@ -56,8 +54,6 @@ namespace sensor_filters {
     void PointCloud2FilterChainBase::subscribe(const std::string& topic)
     {
         const auto topics = this->nodeInterfaces.get_node_topics_interface();
-        rclcpp::SubscriptionOptions opts;
-        opts.qos_overriding_options = this->qosOverrides;
 
 #ifdef POINT_CLOUD_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE
         this->pctSubscriber = point_cloud_transport::create_subscription(
@@ -66,13 +62,13 @@ namespace sensor_filters {
                 this->callbackShared(msg);
             },
             this->pct->getTransportOrDefault(nullptr),
-            rclcpp::QoS(this->options.inputQueueSize).get_rmw_qos_profile(), opts);
+            rclcpp::QoS(this->options.inputQueueSize).get_rmw_qos_profile(), this->subscriptionOptions);
 #else
         this->pctSubscriber = this->pct->subscribe(
             topics->resolve_topic_name(topic), this->options.inputQueueSize,
             [this](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg) {
                 this->callbackShared(msg);
-            }, {}, nullptr, opts);
+            }, {}, nullptr, this->subscriptionOptions);
 #endif
     }
 

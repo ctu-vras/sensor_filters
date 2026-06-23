@@ -20,6 +20,10 @@ FilterChainBaseGeneric::FilterChainBaseGeneric(RequiredInterfaces nodeInterfaces
     "subscription_type", rclcpp::ParameterValue(to_string(defaultOptions.subscriptionType)));
   params->declare_parameter(
     "publication_type", rclcpp::ParameterValue(to_string(defaultOptions.publicationType)));
+  params->declare_parameter(
+    "content_filter_expression", rclcpp::ParameterValue(std::string{}));
+  params->declare_parameter(
+    "content_filter_parameters", rclcpp::ParameterValue(std::vector<std::string>{}));
 }
 
 void FilterChainBaseGeneric::on_configure()
@@ -48,6 +52,14 @@ void FilterChainBaseGeneric::on_configure()
     throw std::runtime_error("Invalid publication type " + to_string(this->options.publicationType));
   }
 
+  this->publisherOptions.qos_overriding_options = this->qosOverrides;
+
+  this->subscriptionOptions.qos_overriding_options = this->qosOverrides;
+  this->subscriptionOptions.content_filter_options.filter_expression =
+    paramsInterface->get_parameter("content_filter_expression").as_string();
+  this->subscriptionOptions.content_filter_options.expression_parameters =
+    paramsInterface->get_parameter("content_filter_parameters").as_string_array();
+
   this->on_configure_chain();
 
   this->advertise("output");
@@ -60,6 +72,8 @@ void FilterChainBaseGeneric::on_cleanup()
   this->unadvertise();
 
   this->options = this->defaultOptions;
+  this->publisherOptions = {};
+  this->subscriptionOptions = {};
 }
 
 void FilterChainBaseGeneric::on_shutdown()
