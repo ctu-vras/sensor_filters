@@ -268,6 +268,17 @@ namespace sensor_filters {
     public:
         constexpr static FilterChainOptions DEFAULT_CHAIN_OPTIONS = {};
 
+        constexpr static std::initializer_list<rclcpp::QosPolicyKind> qosOverrides = {
+            rclcpp::QosPolicyKind::Deadline,
+            rclcpp::QosPolicyKind::Depth,
+            rclcpp::QosPolicyKind::Durability,
+            rclcpp::QosPolicyKind::History,
+            rclcpp::QosPolicyKind::Lifespan,
+            rclcpp::QosPolicyKind::Liveliness,
+            rclcpp::QosPolicyKind::LivelinessLeaseDuration,
+            rclcpp::QosPolicyKind::Reliability,
+        };
+
         explicit FilterChainNodeBase(RequiredInterfaces nodeInterfaces, const std::string& name,
             const FilterChainOptions& defaultChainOptions = DEFAULT_CHAIN_OPTIONS) :
             FilterChainBase<T>(nodeInterfaces, name, defaultChainOptions)
@@ -277,8 +288,11 @@ namespace sensor_filters {
     protected:
         void advertise(const std::string& topic) override
         {
+            rclcpp::PublisherOptions opts;
+            opts.qos_overriding_options = qosOverrides;
+
             this->outputPublisher = rclcpp::create_publisher<T>(
-                this->nodeInterfaces, topic, rclcpp::QoS(this->options.outputQueueSize));
+                this->nodeInterfaces, topic, rclcpp::QoS(this->options.outputQueueSize), opts);
         }
 
         void unadvertise() override
@@ -288,6 +302,9 @@ namespace sensor_filters {
 
         void subscribe(const std::string& topic) override
         {
+            rclcpp::SubscriptionOptions opts;
+            opts.qos_overriding_options = qosOverrides;
+
             switch (this->options.subscriptionType) {
                 case MessagePassingType::UNIQUE_PTR:
                 {
@@ -296,7 +313,7 @@ namespace sensor_filters {
                         this->nodeInterfaces, topic, rclcpp::QoS(this->options.inputQueueSize),
                         [this](typename T::UniquePtr msg) {
                             FilterChainBase<T>::callbackUnique(std::move(msg));
-                        }
+                        }, opts
                     );
                     break;
                 }
@@ -306,7 +323,7 @@ namespace sensor_filters {
                         this->nodeInterfaces, topic, rclcpp::QoS(this->options.inputQueueSize),
                         [this](const typename T::ConstSharedPtr& msg) {
                             FilterChainBase<T>::callbackShared(msg);
-                        }
+                        }, opts
                     );
                     break;
                 }
@@ -316,7 +333,7 @@ namespace sensor_filters {
                         this->nodeInterfaces, topic, rclcpp::QoS(this->options.inputQueueSize),
                         [this](const T& msg) {
                             FilterChainBase<T>::callbackReference(msg);
-                        });
+                        }, opts);
                     break;
                 }
                 default:
