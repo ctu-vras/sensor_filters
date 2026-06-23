@@ -76,11 +76,7 @@ namespace sensor_filters {
     template <typename T>
     struct has_header<T, std::void_t<decltype(std::declval<T>().header)>> : std::true_type {};
 
-    template <typename T>
-    class FilterChainBase : public rclcpp_lifecycle::SimpleManagedEntity {
-
-    public:
-        typedef T Message;
+    class FilterChainBaseGeneric : public rclcpp_lifecycle::SimpleManagedEntity {
 
     protected:
         constexpr static std::initializer_list<rclcpp::QosPolicyKind> qosOverrides = {
@@ -101,56 +97,69 @@ namespace sensor_filters {
         RequiredInterfaces nodeInterfaces;
 
         std::string messageType;
-        filters::FilterChain<T> filterChain;
-        T cachedMsg;
 
         rclcpp::Clock wallClock {RCL_SYSTEM_TIME};
+
+    public:
+        FilterChainBaseGeneric(RequiredInterfaces nodeInterfaces, std::string messageType,
+            std::string filterChainNamespace, const FilterChainOptions& defaultOptions = {});
+
+        virtual void on_configure();
+
+        virtual void on_cleanup();
+
+        virtual void on_shutdown();
+
+    protected:
+        virtual void on_configure_chain() = 0;
+
+        virtual void advertise(const std::string& topic) = 0;
+
+        virtual void unadvertise() = 0;
+
+        virtual void subscribe(const std::string& topic) = 0;
+
+        virtual void unsubscribe() = 0;
+
+        virtual bool validateSubscriptionType() const;
+
+        virtual bool validatePublicationType() const;
+    };
+
+    template <typename T>
+    class FilterChainBase : public FilterChainBaseGeneric {
+
+    public:
+        typedef T Message;
+
+    protected:
+        filters::FilterChain<T> filterChain;
+        T cachedMsg;
 
     public:
         FilterChainBase(
             RequiredInterfaces nodeInterfaces,
             std::string filterChainNamespace,
             const FilterChainOptions& defaultOptions = {}
-        ) : filterChainNamespace(std::move(filterChainNamespace)),
-            defaultOptions(defaultOptions), options(defaultOptions),
-            nodeInterfaces(std::move(nodeInterfaces)), messageType(rosidl_generator_traits::data_type<T>()),
-            filterChain(this->messageType)
+        ) : FilterChainBaseGeneric(std::move(nodeInterfaces), rosidl_generator_traits::data_type<T>(),
+            std::move(filterChainNamespace), defaultOptions), filterChain(this->messageType)
         {
-            const auto params = this->nodeInterfaces.get_node_parameters_interface();
-            params->declare_parameter(
-                "input_queue_size", rclcpp::ParameterValue(static_cast<int64_t>(defaultOptions.inputQueueSize)));
-            params->declare_parameter(
-                "output_queue_size", rclcpp::ParameterValue(static_cast<int64_t>(defaultOptions.outputQueueSize)));
-            params->declare_parameter(
-                "subscription_type", rclcpp::ParameterValue(to_string(defaultOptions.subscriptionType)));
-            params->declare_parameter(
-                "publication_type", rclcpp::ParameterValue(to_string(defaultOptions.publicationType)));
         }
 
-        virtual void on_configure() {
+        void on_cleanup() override {
+            FilterChainBaseGeneric::on_cleanup();
+
+            this->filterChain.clear();
+        }
+
+        void on_shutdown() override {
+            this->on_cleanup();
+        }
+
+    protected:
+        void on_configure_chain() override {
             const auto loggingInterface = this->nodeInterfaces.get_node_logging_interface();
             const auto paramsInterface = this->nodeInterfaces.get_node_parameters_interface();
-
-            this->options.inputQueueSize = paramsInterface->get_parameter("input_queue_size").as_int();
-            this->options.outputQueueSize = paramsInterface->get_parameter("output_queue_size").as_int();
-
-            this->options.subscriptionType = parseMessagePassingType(
-                paramsInterface->get_parameter("subscription_type").as_string());
-            if (!this->validateSubscriptionType())
-            {
-                RCLCPP_FATAL(loggingInterface->get_logger(),
-                    "Invalid subscription type %s", to_string(this->options.subscriptionType).c_str());
-                throw std::runtime_error("Invalid subscription type " + to_string(this->options.subscriptionType));
-            }
-
-            this->options.publicationType = parseMessagePassingType(
-                paramsInterface->get_parameter("publication_type").as_string());
-            if (!this->validatePublicationType())
-            {
-                RCLCPP_FATAL(loggingInterface->get_logger(),
-                    "Invalid publication type %s", to_string(this->options.publicationType).c_str());
-                throw std::runtime_error("Invalid publication type " + to_string(this->options.publicationType));
-            }
 
             if (!this->filterChain.configure(filterChainNamespace, loggingInterface, paramsInterface)) {
                 RCLCPP_ERROR_STREAM(loggingInterface->get_logger(), "Configuration of filter chain for "
@@ -160,32 +169,7 @@ namespace sensor_filters {
 
             RCLCPP_INFO(loggingInterface->get_logger(), "Filter chain %s configured with %lu filters.",
                 filterChainNamespace.c_str(), this->filterChain.get_length());
-
-            this->advertise("output");
-            this->subscribe("input");
         }
-
-        virtual void on_cleanup() {
-            this->unsubscribe();
-            this->unadvertise();
-
-            this->filterChain.clear();
-
-            this->options = this->defaultOptions;
-        }
-
-        virtual void on_shutdown() {
-            this->on_cleanup();
-        }
-
-    protected:
-        virtual void advertise(const std::string& topic) = 0;
-
-        virtual void unadvertise() = 0;
-
-        virtual void subscribe(const std::string& topic) = 0;
-
-        virtual void unsubscribe() = 0;
 
         virtual void publishUnique(typename T::UniquePtr)
         {
@@ -200,16 +184,6 @@ namespace sensor_filters {
         virtual void publishReference(const T&)
         {
             throw std::runtime_error("FilterChainBase does not support reference publications");
-        }
-
-        virtual bool validateSubscriptionType() const
-        {
-            return false;
-        }
-
-        virtual bool validatePublicationType() const
-        {
-            return false;
         }
 
         virtual void callbackUnique(typename T::UniquePtr msgIn) {

@@ -50,6 +50,13 @@ set(LIBRARY_TARGETS
         ${sensor_msgs_TARGETS}
 )
 
+add_library(filter_chain_base SHARED src/FilterChainBase.cpp)
+target_link_libraries(filter_chain_base PUBLIC ${LIBRARY_TARGETS})
+target_include_directories(filter_chain_base PRIVATE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
 macro(add_filter_chain_node arg_TARGET_NAME arg_CLASS_NAME arg_FILENAME)
     set(options)
     set(oneValueArgs BASE_FILTER_LIB)
@@ -65,7 +72,7 @@ macro(add_filter_chain_node arg_TARGET_NAME arg_CLASS_NAME arg_FILENAME)
 
     add_library("${TARGET_NAME}_component" SHARED "${FILENAME}")
     rclcpp_components_register_node("${TARGET_NAME}_component" PLUGIN "sensor_filters::${CLASS_NAME}" EXECUTABLE ${TARGET_NAME})
-    target_link_libraries("${TARGET_NAME}_component" PRIVATE ${LIBRARY_TARGETS})
+    target_link_libraries("${TARGET_NAME}_component" PRIVATE ${LIBRARY_TARGETS} filter_chain_base)
     if(BASE_FILTER_LIB)
         target_link_libraries("${TARGET_NAME}_component" PRIVATE ${BASE_FILTER_LIB})
     endif()
@@ -179,6 +186,9 @@ target_include_directories(${PROJECT_NAME}_image_filter_chain_base PUBLIC
 if(image_transport_VERSION VERSION_LESS 6.4.0)
     target_compile_definitions(${PROJECT_NAME}_image_filter_chain_base PUBLIC IMAGE_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE)
 endif()
+if(image_transport_VERSION VERSION_LESS 3.2.0)
+    target_compile_definitions(${PROJECT_NAME}_image_filter_chain_base PUBLIC IMAGE_TRANSPORT_PUB_OPTIONS_NOT_AVAILABLE)
+endif()
 
 add_library(${PROJECT_NAME}_pointcloud2_filter_chain_base SHARED src/PointCloud2FilterChainBase.cpp)
 target_link_libraries(${PROJECT_NAME}_pointcloud2_filter_chain_base PUBLIC ${LIBRARY_TARGETS} point_cloud_transport::point_cloud_transport)
@@ -233,7 +243,7 @@ endmacro()
 
 register_universal_filter(ChangeHeader "Change the header of a message.")
 
-install(TARGETS ${FILTER_LIBRARIES} ${PROJECT_NAME}_image_filter_chain_base ${PROJECT_NAME}_pointcloud2_filter_chain_base
+install(TARGETS ${FILTER_LIBRARIES} filter_chain_base ${PROJECT_NAME}_image_filter_chain_base ${PROJECT_NAME}_pointcloud2_filter_chain_base
         EXPORT export_${PROJECT_NAME}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib
