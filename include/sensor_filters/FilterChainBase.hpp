@@ -147,6 +147,9 @@ namespace sensor_filters {
                 throw std::runtime_error("Filter configuration error");
             }
 
+            RCLCPP_INFO(loggingInterface->get_logger(), "Filter chain %s configured with %lu filters.",
+                filterChainNamespace.c_str(), this->filterChain.get_length());
+
             this->advertise("output");
             this->subscribe("input");
         }
