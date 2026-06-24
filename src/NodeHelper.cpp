@@ -52,4 +52,4 @@ rclcpp::Node::SharedPtr GetNodeSharedPtrFromRawPtr(rclcpp::Node* node) {
   return shared_node;
 }
 
-} // namespace sensor_filters
+}  // namespace sensor_filters

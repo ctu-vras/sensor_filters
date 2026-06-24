@@ -20,4 +20,4 @@ using RequiredInterfaces = rclcpp::node_interfaces::NodeInterfaces<
   rclcpp::node_interfaces::NodeTopicsInterface
 >;
 
-} // namespace sensor_filters
+}  // namespace sensor_filters

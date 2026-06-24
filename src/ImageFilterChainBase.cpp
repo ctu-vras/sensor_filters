@@ -110,4 +110,4 @@ void ImageFilterChainBase::PublishReference(const sensor_msgs::msg::Image& msg) 
   it_publisher_.publish(msg);
 }
 
-} // namespace sensor_filters
+}  // namespace sensor_filters

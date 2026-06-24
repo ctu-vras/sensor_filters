@@ -58,4 +58,4 @@ private:
   image_transport::Subscriber it_subscriber_;
 };
 
-} // namespace sensor_filters
+}  // namespace sensor_filters

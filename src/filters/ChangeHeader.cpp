@@ -84,7 +84,7 @@ private:
   std::optional<rclcpp::Duration> new_stamp_rel_;
 };
 
-} // namespace sensor_filters
+}  // namespace sensor_filters
 
 #include <sensor_filters/RegisterFilter.hpp>
 REGISTER_UNIVERSAL_SENSOR_MSGS_FILTER(sensor_filters::ChangeHeader)

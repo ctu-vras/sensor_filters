@@ -83,7 +83,8 @@ target_include_directories(${PROJECT_NAME}_image_filter_chain_base PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 if(image_transport_VERSION VERSION_LESS 6.4.0)
-  target_compile_definitions(${PROJECT_NAME}_image_filter_chain_base PUBLIC IMAGE_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE)
+  target_compile_definitions(${PROJECT_NAME}_image_filter_chain_base
+    PUBLIC IMAGE_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE)
 endif()
 if(image_transport_VERSION VERSION_LESS 3.2.0)
   target_compile_definitions(${PROJECT_NAME}_image_filter_chain_base PUBLIC IMAGE_TRANSPORT_PUB_OPTIONS_NOT_AVAILABLE)
@@ -100,7 +101,8 @@ target_include_directories(${PROJECT_NAME}_pointcloud2_filter_chain_base PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 if(point_cloud_transport_VERSION VERSION_LESS 5.2.0)
-  target_compile_definitions(${PROJECT_NAME}_pointcloud2_filter_chain_base PUBLIC POINT_CLOUD_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE)
+  target_compile_definitions(${PROJECT_NAME}_pointcloud2_filter_chain_base
+    PUBLIC POINT_CLOUD_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE)
 endif()
 
 ##################################################################
@@ -139,7 +141,8 @@ macro(add_filter_chain_node arg_TARGET_NAME arg_CLASS_NAME arg_FILENAME)
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
   )
-  rclcpp_components_register_node("${TARGET_NAME}_component" PLUGIN "sensor_filters::${CLASS_NAME}" EXECUTABLE ${TARGET_NAME})
+  rclcpp_components_register_node(
+    "${TARGET_NAME}_component" PLUGIN "sensor_filters::${CLASS_NAME}" EXECUTABLE ${TARGET_NAME})
 
   install(TARGETS "${TARGET_NAME}_component"
     ARCHIVE DESTINATION lib
@@ -229,7 +232,8 @@ generate_filter_chain_source("joy" HEADER_NAME "joy" MESSAGE_TYPE "Joy")
 generate_filter_chain_source("joy_feedback_array" HEADER_NAME "joy_feedback_array" MESSAGE_TYPE "JoyFeedbackArray")
 generate_filter_chain_source("laser_scan" HEADER_NAME "laser_scan" MESSAGE_TYPE "LaserScan")
 generate_filter_chain_source("magnetic_field" HEADER_NAME "magnetic_field" MESSAGE_TYPE "MagneticField")
-generate_filter_chain_source("multi_dof_joint_state" HEADER_NAME "multi_dof_joint_state" MESSAGE_TYPE "MultiDOFJointState")
+generate_filter_chain_source(
+  "multi_dof_joint_state" HEADER_NAME "multi_dof_joint_state" MESSAGE_TYPE "MultiDOFJointState")
 generate_filter_chain_source("multi_echo_scan" HEADER_NAME "multi_echo_laser_scan" MESSAGE_TYPE "MultiEchoLaserScan")
 generate_filter_chain_source("navsat_fix" HEADER_NAME "nav_sat_fix" MESSAGE_TYPE "NavSatFix")
 generate_filter_chain_source("pointcloud" HEADER_NAME "point_cloud" MESSAGE_TYPE "PointCloud")
@@ -268,7 +272,11 @@ install(DIRECTORY include/ DESTINATION include)
 
 install(DIRECTORY cmake/ DESTINATION share/${PROJECT_NAME}/cmake FILES_MATCHING PATTERN "UniversalFilter*")
 
-#if (CATKIN_ENABLE_TESTING)
+if(BUILD_TESTING)
+  find_package(cras_lint REQUIRED)
+  cras_lint_common()
+  cras_lint_cpp(SKIP_UNCRUSTIFY)
+
 #    find_package(roslint REQUIRED)
 #
 #    # catkin_lint - checks validity of package.xml and CMakeLists.txt
@@ -299,7 +307,7 @@ install(DIRECTORY cmake/ DESTINATION share/${PROJECT_NAME}/cmake FILES_MATCHING 
 #    roslint_cpp(${ROSLINT_INCLUDE} ${ROSLINT_SRC})
 #
 #    roslint_add_test()
-#endif ()
+endif()
 
 ament_export_include_directories(include)
 ament_export_dependencies(${DEPENDENCIES})

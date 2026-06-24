@@ -90,4 +90,4 @@ protected:
   std::unique_ptr<FilterChainBase<T>> filter_chain_base_;
 };
 
-} // namespace sensor_filters
+}  // namespace sensor_filters

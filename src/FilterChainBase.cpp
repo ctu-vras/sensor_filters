@@ -118,4 +118,4 @@ bool FilterChainBaseGeneric::ValidatePublicationType() const {
   return false;
 }
 
-} // namespace sensor_filters
+}  // namespace sensor_filters

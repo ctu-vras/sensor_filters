@@ -57,4 +57,4 @@ private:
   point_cloud_transport::Subscriber pct_subscriber_;
 };
 
-} // namespace sensor_filters
+}  // namespace sensor_filters

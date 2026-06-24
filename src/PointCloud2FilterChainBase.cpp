@@ -100,4 +100,4 @@ void PointCloud2FilterChainBase::PublishReference(const sensor_msgs::msg::PointC
   pct_publisher_.publish(msg);
 }
 
-} // namespace sensor_filters
+}  // namespace sensor_filters

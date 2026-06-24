@@ -18,4 +18,4 @@ rclcpp::Node::SharedPtr GetNodeSharedPtrFromRawPtr(rclcpp::Node* node);
 
 rclcpp::Node::SharedPtr GetNodeSharedPtrFromInterfaces(RequiredInterfaces node_interfaces);
 
-} // namespace sensor_filters
+}  // namespace sensor_filters

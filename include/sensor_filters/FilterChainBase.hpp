@@ -371,4 +371,4 @@ protected:
   typename rclcpp::Publisher<T>::SharedPtr output_publisher_;
 };
 
-} // namespace sensor_filters
+}  // namespace sensor_filters

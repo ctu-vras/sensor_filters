@@ -38,7 +38,7 @@ SPDX-FileCopyrightText: Czech Technical University in Prague
 
   <exec_depend>backward_ros</exec_depend>
 
-  <!--test_depend>cras_lint</test_depend-->  <!-- TODO enable linting -->
+  <test_depend>cras_lint</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

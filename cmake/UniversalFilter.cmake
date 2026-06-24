@@ -41,7 +41,8 @@ set(UNIVERSAL_SENSOR_FILTER_TYPES_ALL ${UNIVERSAL_SENSOR_FILTER_TYPES} ${UNIVERS
 # :type FILTER_DESCRIPTION: string
 # :param FILTER_TARGET: Name of the filter's CMake target. Defaults to ${FILTER_NAME}Filter
 # :type FILTER_TARGET: string
-# :param FILTER_PREFIX: Prefix of the filter (serves as C++ namespace and as prefix for the registered filters). Defaults to sensor_filters.
+# :param FILTER_PREFIX: Prefix of the filter (serves as C++ namespace and as prefix for the registered filters).
+#                       Defaults to sensor_filters.
 # :type FILTER_PREFIX: string
 # :param MESSAGE_TYPES: The types of sensor_msgs messages to register the filter for.
 # :type MESSAGE_TYPES: list of string
@@ -64,13 +65,13 @@ macro(register_universal_filter_description_file arg_FILTER_NAME arg_FILTER_DESC
   else()
     set(FILTER_TARGET "${FILTER_NAME}Filter")
   endif()
-  
+
   if(arg_FILTER_PREFIX)
     set(FILTER_PREFIX "${arg_FILTER_PREFIX}")
   else()
     set(FILTER_PREFIX "sensor_filters")
   endif()
-  
+
   if(arg_MESSAGE_TYPES)
     set(MESSAGE_TYPES "${arg_MESSAGE_TYPES}")
   else()
@@ -85,7 +86,8 @@ macro(register_universal_filter_description_file arg_FILTER_NAME arg_FILTER_DESC
 
   set(UNIVERSAL_FILTER_CLASSES "")
   foreach(MESSAGE_TYPE IN LISTS MESSAGE_TYPES)
-    configure_file(cmake/UniversalFilterItem.xml.in "${CMAKE_CURRENT_BINARY_DIR}/${FILTER_NAME}/${MESSAGE_TYPE}.xml" @ONLY)
+    configure_file(
+      cmake/UniversalFilterItem.xml.in "${CMAKE_CURRENT_BINARY_DIR}/${FILTER_NAME}/${MESSAGE_TYPE}.xml" @ONLY)
     file(READ "${CMAKE_CURRENT_BINARY_DIR}/${FILTER_NAME}/${MESSAGE_TYPE}.xml" universal_filter_item)
     set(UNIVERSAL_FILTER_CLASSES "${UNIVERSAL_FILTER_CLASSES}\n${universal_filter_item}")
   endforeach()
