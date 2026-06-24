@@ -5,8 +5,8 @@
 Changelog for package sensor_filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.0 (2026-06-24)
+------------------
 * Added integration tests.
 * Fixed license issues, made the repo REUSE-compliant.
 * Added support for lazy input topics.
