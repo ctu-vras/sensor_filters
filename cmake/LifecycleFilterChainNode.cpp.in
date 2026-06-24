@@ -6,11 +6,11 @@
 #include <@MESSAGE_HEADER@>
 
 namespace sensor_filters {
-    class @CLASS_NAME@ : public LifecycleFilterChainNode<@TEMPLATE_ARGS@> {
+    class @LIFECYCLE_CLASS_NAME@ : public LifecycleFilterChainNode<@TEMPLATE_ARGS@> {
     public:
-        explicit @CLASS_NAME@(const rclcpp::NodeOptions& options) : LifecycleFilterChainNode("@NODE_NAME@", options) {}
+        explicit @LIFECYCLE_CLASS_NAME@(const rclcpp::NodeOptions& options) : LifecycleFilterChainNode("@NODE_NAME@", options) {}
     };
 }
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(sensor_filters::@CLASS_NAME@)
+RCLCPP_COMPONENTS_REGISTER_NODE(sensor_filters::@LIFECYCLE_CLASS_NAME@)

@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <!--
 SPDX-License-Identifier: BSD-3-Clause
 SPDX-FileCopyrightText: Czech Technical University in Prague
@@ -9,30 +10,33 @@ SPDX-FileCopyrightText: Czech Technical University in Prague
   <description>Simple sensor filter chain nodes and nodelets</description>
 
   <maintainer email="peckama2@fel.cvut.cz">Martin Pecka</maintainer>
-  <author email="peckama2@fel.cvut.cz">Martin Pecka</author>
 
-  <license>BSD</license>
+  <license file="LICENSE">BSD</license>
 
-  <url type="website">https://github.com/ctu-vras/sensor_filters</url>
+  <url type="website">https://index.ros.org/p/sensor_filters</url>
+  <url type="bugtracker">https://github.com/ctu-vras/sensor_filters/issues</url>
+  <url type="repository">https://github.com/ctu-vras/sensor_filters</url>
+
+  <author>Martin Pecka</author>
+  <author>solonovamax</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <depend>boost</depend>
   <depend>filters</depend>
   <depend>image_transport</depend>
+  <depend>lifecycle_msgs</depend>
+  <depend>pluginlib</depend>
   <depend>point_cloud_transport</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
-    <depend>rclcpp_lifecycle</depend>
-    <depend>rosidl_runtime_cpp</depend>
-    <depend>lifecycle_msgs</depend>
+  <depend>rclcpp_lifecycle</depend>
+  <depend>rosidl_runtime_cpp</depend>
   <depend>sensor_msgs</depend>
 
-  <build_depend>boost</build_depend>
   <build_depend>backward_ros</build_depend>
-  <build_depend>pluginlib</build_depend>
 
   <exec_depend>backward_ros</exec_depend>
-  <exec_depend>pluginlib</exec_depend>
 
   <!--test_depend>cras_lint</test_depend-->  <!-- TODO enable linting -->
 
