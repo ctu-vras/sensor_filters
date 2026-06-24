@@ -44,6 +44,9 @@ class TestLaserFilter(unittest.TestCase):
                 if self.pub.get_subscription_count() > 0 and self.sub.get_publisher_count() > 0:
                     break
 
+    def tearDown(self):
+        self.node.destroy_node()
+
     def callback(self, msg):
         self.received_msg = msg
 

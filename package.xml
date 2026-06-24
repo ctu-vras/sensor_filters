@@ -39,7 +39,9 @@ SPDX-FileCopyrightText: Czech Technical University in Prague
   <exec_depend>backward_ros</exec_depend>
 
   <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>compressed_image_transport</test_depend>
   <test_depend condition="$ROS_DISTRO &gt;= 'jazzy'">cras_lint</test_depend>
+  <test_depend>draco_point_cloud_transport</test_depend>
   <test_depend>laser_filters</test_depend>
   <test_depend>launch</test_depend>
   <test_depend>launch_ros</test_depend>

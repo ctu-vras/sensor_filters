@@ -282,37 +282,8 @@ if(BUILD_TESTING)
 
   find_package(ament_cmake_pytest REQUIRED)
   ament_add_pytest_test("test_generic" test/test_generic.py)
-
-#    find_package(roslint REQUIRED)
-#
-#    # catkin_lint - checks validity of package.xml and CMakeLists.txt
-#    # ROS buildfarm calls this without any environment and with empty rosdep cache,
-#    # so we have problems reading the list of packages from env
-#    # see https://github.com/ros-infrastructure/ros_buildfarm/issues/923
-#    if (DEFINED ENV{ROS_HOME})
-#        #catkin_lint: ignore_once env_var
-#        set(ROS_HOME "$ENV{ROS_HOME}")
-#    else ()
-#        #catkin_lint: ignore_once env_var
-#        set(ROS_HOME "$ENV{HOME}/.ros")
-#    endif ()
-#    #catkin_lint: ignore_once env_var
-#    if (DEFINED ENV{ROS_ROOT} AND EXISTS "${ROS_HOME}/rosdep/sources.cache")
-#        roslint_custom(catkin_lint "-W2" .)
-#    endif ()
-#
-#    # Roslint C++ - checks formatting and some other rules for C++ files
-#
-#    file(GLOB_RECURSE ROSLINT_INCLUDE include/*.h include/*.hpp)
-#    file(GLOB_RECURSE ROSLINT_SRC src/*.cpp src/filters/*.cpp src/filters/*.hpp examples/*.cpp)
-#    #file(GLOB_RECURSE ROSLINT_TEST test/*.cpp)
-#
-#    set(ROSLINT_CPP_OPTS "--extensions=h,hpp,hh,c,cpp,cc;--linelength=120;--filter=\
-#    -build/header_guard,-readability/namespace,-whitespace/braces,-runtime/references,\
-#    -build/c++11,-readability/nolint,-readability/todo,-legal/copyright,-build/namespaces")
-#    roslint_cpp(${ROSLINT_INCLUDE} ${ROSLINT_SRC})
-#
-#    roslint_add_test()
+  ament_add_pytest_test("test_image" test/test_image.py)
+  ament_add_pytest_test("test_pointcloud2" test/test_pointcloud2.py)
 endif()
 
 ament_export_include_directories(include)
