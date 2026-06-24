@@ -253,10 +253,9 @@ install(TARGETS ${FILTER_LIBRARIES} filter_chain_base ${PROJECT_NAME}_image_filt
         RUNTIME DESTINATION bin
 )
 
-install(
-        DIRECTORY include/
-        DESTINATION include
-)
+install(DIRECTORY include/ DESTINATION include)
+
+install(DIRECTORY cmake/ DESTINATION share/${PROJECT_NAME}/cmake FILES_MATCHING PATTERN "UniversalFilter*")
 
 #if (CATKIN_ENABLE_TESTING)
 #    find_package(roslint REQUIRED)
