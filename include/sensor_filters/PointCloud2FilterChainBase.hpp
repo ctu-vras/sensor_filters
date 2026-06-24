@@ -14,40 +14,47 @@
 
 namespace sensor_filters {
 
-    class PointCloud2FilterChainBase : public FilterChainBase<sensor_msgs::msg::PointCloud2> {
-    public:
-        constexpr static FilterChainOptions kDefaultChainOptions = {
-            10U, 10U, MessagePassingType::SHARED_PTR, MessagePassingType::SHARED_PTR
-        };
+class PointCloud2FilterChainBase : public FilterChainBase<sensor_msgs::msg::PointCloud2> {
+public:
+  constexpr static FilterChainOptions kDefaultChainOptions = {
+    10U, 10U, MessagePassingType::SHARED_PTR, MessagePassingType::SHARED_PTR
+  };
 
-        explicit PointCloud2FilterChainBase(RequiredInterfaces node_interfaces,
-            const std::string& name = "pointcloud2_filter_chain",
-            const FilterChainOptions& default_chain_options = kDefaultChainOptions);
+  explicit PointCloud2FilterChainBase(
+    RequiredInterfaces node_interfaces, const std::string& name = "pointcloud2_filter_chain",
+    const FilterChainOptions& default_chain_options = kDefaultChainOptions);
 
-    protected:
-        bool ValidateSubscriptionType() const override;
-        bool ValidatePublicationType() const override;
+protected:
+  bool ValidateSubscriptionType() const override;
 
-        void Advertise(const std::string& topic) override;
-        void Unadvertise() override;
+  bool ValidatePublicationType() const override;
 
-        void Subscribe(const std::string& topic) override;
-        void Unsubscribe() override;
-        bool IsSubscribed() const override;
-        size_t GetNumSubscribers() const override;
+  void Advertise(const std::string& topic) override;
 
-        void PublishUnique(sensor_msgs::msg::PointCloud2::UniquePtr) override;
-        void PublishShared(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg) override;
-        void PublishReference(const sensor_msgs::msg::PointCloud2& msg) override;
+  void Unadvertise() override;
 
-    private:
+  void Subscribe(const std::string& topic) override;
+
+  void Unsubscribe() override;
+
+  bool IsSubscribed() const override;
+
+  size_t GetNumSubscribers() const override;
+
+  void PublishUnique(sensor_msgs::msg::PointCloud2::UniquePtr) override;
+
+  void PublishShared(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg) override;
+
+  void PublishReference(const sensor_msgs::msg::PointCloud2& msg) override;
+
+private:
 #ifdef POINT_CLOUD_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE
-	    rclcpp::Node::SharedPtr node_ptr_;
+  rclcpp::Node::SharedPtr node_ptr_;
 #endif
-        std::unique_ptr<point_cloud_transport::PointCloudTransport> pct_;
-        std::unique_ptr<point_cloud_transport::TransportHints> transport_hints_;
-        point_cloud_transport::Publisher pct_publisher_;
-        point_cloud_transport::Subscriber pct_subscriber_;
-    };
+  std::unique_ptr<point_cloud_transport::PointCloudTransport> pct_;
+  std::unique_ptr<point_cloud_transport::TransportHints> transport_hints_;
+  point_cloud_transport::Publisher pct_publisher_;
+  point_cloud_transport::Subscriber pct_subscriber_;
+};
 
 } // namespace sensor_filters

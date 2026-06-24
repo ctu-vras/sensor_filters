@@ -37,46 +37,46 @@
 
 //! \brief All "top-level" message types from sensor_msgs that contain a header.
 #define SENSOR_MSGS_SEQ \
-    (sensor_msgs::msg::BatteryState) \
-    (sensor_msgs::msg::CameraInfo) \
-    (sensor_msgs::msg::CompressedImage) \
-    (sensor_msgs::msg::FluidPressure) \
-    (sensor_msgs::msg::Illuminance) \
-    (sensor_msgs::msg::Image) \
-    (sensor_msgs::msg::Imu) \
-    (sensor_msgs::msg::JointState) \
-    (sensor_msgs::msg::Joy) \
-    (sensor_msgs::msg::LaserScan) \
-    (sensor_msgs::msg::MagneticField) \
-    (sensor_msgs::msg::MultiDOFJointState) \
-    (sensor_msgs::msg::MultiEchoLaserScan) \
-    (sensor_msgs::msg::NavSatFix) \
-    (sensor_msgs::msg::PointCloud) \
-    (sensor_msgs::msg::PointCloud2) \
-    (sensor_msgs::msg::Range) \
-    (sensor_msgs::msg::RelativeHumidity) \
-    (sensor_msgs::msg::Temperature) \
-    (sensor_msgs::msg::TimeReference)
+  (sensor_msgs::msg::BatteryState) \
+  (sensor_msgs::msg::CameraInfo) \
+  (sensor_msgs::msg::CompressedImage) \
+  (sensor_msgs::msg::FluidPressure) \
+  (sensor_msgs::msg::Illuminance) \
+  (sensor_msgs::msg::Image) \
+  (sensor_msgs::msg::Imu) \
+  (sensor_msgs::msg::JointState) \
+  (sensor_msgs::msg::Joy) \
+  (sensor_msgs::msg::LaserScan) \
+  (sensor_msgs::msg::MagneticField) \
+  (sensor_msgs::msg::MultiDOFJointState) \
+  (sensor_msgs::msg::MultiEchoLaserScan) \
+  (sensor_msgs::msg::NavSatFix) \
+  (sensor_msgs::msg::PointCloud) \
+  (sensor_msgs::msg::PointCloud2) \
+  (sensor_msgs::msg::Range) \
+  (sensor_msgs::msg::RelativeHumidity) \
+  (sensor_msgs::msg::Temperature) \
+  (sensor_msgs::msg::TimeReference)
 
 //! \brief All "top-level" message types from sensor_msgs that do not contain a header.
 #define SENSOR_MSGS_NO_HEADER_SEQ \
-    (sensor_msgs::msg::JoyFeedbackArray)
+  (sensor_msgs::msg::JoyFeedbackArray)
 
 #define REGISTER_TEMPLATED_FILTER_FOR_MSG(filter, msg) \
-    PLUGINLIB_EXPORT_CLASS(filter<msg>, filters::FilterBase<msg>)
+  PLUGINLIB_EXPORT_CLASS(filter<msg>, filters::FilterBase<msg>)
 
 #define REGISTER_TEMPLATED_FILTER_FOR_MSG_BOOST_PP_SEQ_HELPER(r, filter, msg) \
-    REGISTER_TEMPLATED_FILTER_FOR_MSG(filter, msg)
+  REGISTER_TEMPLATED_FILTER_FOR_MSG(filter, msg)
 
 #define REGISTER_TEMPLATED_FILTER_FOR_MSGS(filter, msg_seq) \
-    BOOST_PP_SEQ_FOR_EACH(REGISTER_TEMPLATED_FILTER_FOR_MSG_BOOST_PP_SEQ_HELPER, filter, msg_seq)
+  BOOST_PP_SEQ_FOR_EACH(REGISTER_TEMPLATED_FILTER_FOR_MSG_BOOST_PP_SEQ_HELPER, filter, msg_seq)
 
 //! \brief Register the given templated filters::FilterBase implementation for all sensor_msgs messages with header.
 //! \note Don't forget to register the filters by calling register_universal_filter_description_file() CMake macro.
 #define REGISTER_UNIVERSAL_SENSOR_MSGS_FILTER(filter) \
-    REGISTER_TEMPLATED_FILTER_FOR_MSGS(filter, SENSOR_MSGS_SEQ)
+  REGISTER_TEMPLATED_FILTER_FOR_MSGS(filter, SENSOR_MSGS_SEQ)
 
 //! \brief Register the given templated filters::FilterBase implementation for all sensor_msgs messages without header.
 //! \note Don't forget to register the filters by calling register_universal_filter_description_file() CMake macro.
 #define REGISTER_NO_HEADER_SENSOR_MSGS_FILTER(filter) \
-    REGISTER_TEMPLATED_FILTER_FOR_MSGS(filter, SENSOR_MSGS_NO_HEADER_SEQ)
+  REGISTER_TEMPLATED_FILTER_FOR_MSGS(filter, SENSOR_MSGS_NO_HEADER_SEQ)

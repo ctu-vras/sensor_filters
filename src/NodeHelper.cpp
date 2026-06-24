@@ -21,16 +21,13 @@
 
 #include "NodeHelper.hpp"
 
-namespace sensor_filters
-{
+namespace sensor_filters {
 
-struct NodeLike
-{
+struct NodeLike {
   uint8_t data[sizeof(rclcpp::Node)];
 };
 
-rclcpp::Node::SharedPtr GetNodeSharedPtrFromInterfaces(RequiredInterfaces node_interfaces)
-{
+rclcpp::Node::SharedPtr GetNodeSharedPtrFromInterfaces(RequiredInterfaces node_interfaces) {
   // This is a trick to create a shared_ptr to Node without calling its constructor. This is super dangerous.
   // Only use it when you know what you're doing. Using any other interfaces on the node than those specified here
   // will lead to segfaults.
@@ -48,8 +45,7 @@ rclcpp::Node::SharedPtr GetNodeSharedPtrFromInterfaces(RequiredInterfaces node_i
   return node;
 }
 
-rclcpp::Node::SharedPtr GetNodeSharedPtrFromRawPtr(rclcpp::Node* node)
-{
+rclcpp::Node::SharedPtr GetNodeSharedPtrFromRawPtr(rclcpp::Node* node) {
   auto shared_node = node->create_sub_node("sub");
   const_cast<std::string&>(shared_node->effective_namespace_) = node->get_effective_namespace();
   const_cast<std::string&>(shared_node->sub_namespace_) = node->get_sub_namespace();

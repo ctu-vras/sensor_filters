@@ -13,11 +13,11 @@
 namespace sensor_filters {
 
 using RequiredInterfaces = rclcpp::node_interfaces::NodeInterfaces<
-    rclcpp::node_interfaces::NodeBaseInterface,
-    rclcpp::node_interfaces::NodeParametersInterface,
-    rclcpp::node_interfaces::NodeLoggingInterface,
-    rclcpp::node_interfaces::NodeTimersInterface,
-    rclcpp::node_interfaces::NodeTopicsInterface
+  rclcpp::node_interfaces::NodeBaseInterface,
+  rclcpp::node_interfaces::NodeParametersInterface,
+  rclcpp::node_interfaces::NodeLoggingInterface,
+  rclcpp::node_interfaces::NodeTimersInterface,
+  rclcpp::node_interfaces::NodeTopicsInterface
 >;
 
-}
+} // namespace sensor_filters

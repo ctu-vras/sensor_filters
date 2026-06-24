@@ -12,8 +12,7 @@
 #include <rclcpp/node.hpp>
 #include <sensor_filters/NodeInterfaces.hpp>
 
-namespace sensor_filters
-{
+namespace sensor_filters {
 
 rclcpp::Node::SharedPtr GetNodeSharedPtrFromRawPtr(rclcpp::Node* node);
 

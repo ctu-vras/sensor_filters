@@ -16,98 +16,88 @@
 
 namespace sensor_filters {
 
-    PointCloud2FilterChainBase::PointCloud2FilterChainBase(RequiredInterfaces node_interfaces,
-        const std::string& name,
-        const FilterChainOptions& default_chain_options): FilterChainBase(node_interfaces, name, default_chain_options)
-    {
+PointCloud2FilterChainBase::PointCloud2FilterChainBase(
+  RequiredInterfaces node_interfaces, const std::string& name, const FilterChainOptions& default_chain_options)
+  : FilterChainBase(node_interfaces, name, default_chain_options) {
 #ifdef POINT_CLOUD_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE
-        node_ptr_ = GetNodeSharedPtrFromInterfaces(node_interfaces);
-        pct_ = std::make_unique<point_cloud_transport::PointCloudTransport>(node_ptr_);
-        transport_hints_ = std::make_unique<point_cloud_transport::TransportHints>(node_ptr_);
+  node_ptr_ = GetNodeSharedPtrFromInterfaces(node_interfaces);
+  pct_ = std::make_unique<point_cloud_transport::PointCloudTransport>(node_ptr_);
+  transport_hints_ = std::make_unique<point_cloud_transport::TransportHints>(node_ptr_);
 #else
-        pct_ = std::make_unique<point_cloud_transport::PointCloudTransport>(node_interfaces);
-        transport_hints_ = std::make_unique<point_cloud_transport::TransportHints>(node_interfaces_);
+  pct_ = std::make_unique<point_cloud_transport::PointCloudTransport>(node_interfaces);
+  transport_hints_ = std::make_unique<point_cloud_transport::TransportHints>(node_interfaces_);
 #endif
-    }
+}
 
-    bool PointCloud2FilterChainBase::ValidateSubscriptionType() const
-    {
-        return options_.subscription_type == MessagePassingType::SHARED_PTR;
-    }
+bool PointCloud2FilterChainBase::ValidateSubscriptionType() const {
+  return options_.subscription_type == MessagePassingType::SHARED_PTR;
+}
 
-    bool PointCloud2FilterChainBase::ValidatePublicationType() const
-    {
-        return options_.publication_type != MessagePassingType::UNIQUE_PTR;
-    }
+bool PointCloud2FilterChainBase::ValidatePublicationType() const {
+  return options_.publication_type != MessagePassingType::UNIQUE_PTR;
+}
 
-    void PointCloud2FilterChainBase::Advertise(const std::string& topic)
-    {
-        const auto topics = node_interfaces_.get_node_topics_interface();
+void PointCloud2FilterChainBase::Advertise(const std::string& topic) {
+  const auto topics = node_interfaces_.get_node_topics_interface();
 
-        pct_publisher_ = pct_->advertise(
-            topics->resolve_topic_name(topic), options_.output_queue_size, publisher_options_);
-    }
+  pct_publisher_ = pct_->advertise(topics->resolve_topic_name(topic), options_.output_queue_size, publisher_options_);
+}
 
-    void PointCloud2FilterChainBase::Unadvertise()
-    {
-        pct_publisher_.shutdown();
-    }
+void PointCloud2FilterChainBase::Unadvertise() {
+  pct_publisher_.shutdown();
+}
 
-    void PointCloud2FilterChainBase::Subscribe(const std::string& topic)
-    {
-        const auto topics = node_interfaces_.get_node_topics_interface();
+void PointCloud2FilterChainBase::Subscribe(const std::string& topic) {
+  const auto topics = node_interfaces_.get_node_topics_interface();
 
 #ifdef POINT_CLOUD_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE
-        pct_subscriber_ = point_cloud_transport::create_subscription(
-            node_ptr_, topics->resolve_topic_name(topic),
-            [this](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg) {
-                this->CallbackShared(msg);
-            },
-            pct_->getTransportOrDefault(transport_hints_.get()),
-            rclcpp::QoS(options_.input_queue_size).get_rmw_qos_profile(), subscription_options_);
+  pct_subscriber_ = point_cloud_transport::create_subscription(
+    node_ptr_, topics->resolve_topic_name(topic),
+    [this](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg) {
+      this->CallbackShared(msg);
+    },
+    pct_->getTransportOrDefault(transport_hints_.get()), rclcpp::QoS(options_.input_queue_size).get_rmw_qos_profile(),
+    subscription_options_);
 #else
-        pct_subscriber_ = pct_->subscribe(
-            topics->resolve_topic_name(topic), options_.input_queue_size,
-            [this](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg) {
-                this->CallbackShared(msg);
-            }, {}, nullptr, subscription_options_);
+  pct_subscriber_ = pct_->subscribe(
+    topics->resolve_topic_name(topic), options_.input_queue_size,
+    [this](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg) {
+      this->CallbackShared(msg);
+    },
+    {}, transport_hints_.get(), subscription_options_);
 #endif
-    }
+}
 
-    void PointCloud2FilterChainBase::Unsubscribe()
-    {
-        pct_subscriber_.shutdown();
-    }
+void PointCloud2FilterChainBase::Unsubscribe() {
+  pct_subscriber_.shutdown();
+}
 
-    bool PointCloud2FilterChainBase::IsSubscribed() const
-    {
-        return pct_subscriber_;
-    }
+bool PointCloud2FilterChainBase::IsSubscribed() const {
+  return pct_subscriber_;
+}
 
-    size_t PointCloud2FilterChainBase::GetNumSubscribers() const
-    {
-        if (!pct_publisher_)
-            return 0u;
+size_t PointCloud2FilterChainBase::GetNumSubscribers() const {
+  if (!pct_publisher_) {
+    return 0u;
+  }
 
-        size_t count {0u};
-        for (const auto& [topic, pub] : pct_publisher_.getPublishers())
-            count += pub->get_subscription_count() + pub->get_subscription_count();
-        return count;
-    }
+  size_t count {0u};
+  for (const auto& [topic, pub] : pct_publisher_.getPublishers()) {
+    count += pub->get_subscription_count() + pub->get_subscription_count();
+  }
+  return count;
+}
 
-    void PointCloud2FilterChainBase::PublishUnique(sensor_msgs::msg::PointCloud2::UniquePtr)
-    {
-        throw std::runtime_error("PointCloud2FilterChainNode does not support unique_ptr publications");
-    }
+void PointCloud2FilterChainBase::PublishUnique(sensor_msgs::msg::PointCloud2::UniquePtr) {
+  throw std::runtime_error("PointCloud2FilterChainNode does not support unique_ptr publications");
+}
 
-    void PointCloud2FilterChainBase::PublishShared(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg)
-    {
-        pct_publisher_.publish(msg);
-    }
+void PointCloud2FilterChainBase::PublishShared(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg) {
+  pct_publisher_.publish(msg);
+}
 
-    void PointCloud2FilterChainBase::PublishReference(const sensor_msgs::msg::PointCloud2& msg)
-    {
-        pct_publisher_.publish(msg);
-    }
+void PointCloud2FilterChainBase::PublishReference(const sensor_msgs::msg::PointCloud2& msg) {
+  pct_publisher_.publish(msg);
+}
 
 } // namespace sensor_filters
