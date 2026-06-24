@@ -280,6 +280,9 @@ if(BUILD_TESTING)
     cras_lint_cpp(SKIP_UNCRUSTIFY)
   endif()
 
+  find_package(ament_cmake_pytest REQUIRED)
+  ament_add_pytest_test("test_generic" test/test_generic.py)
+
 #    find_package(roslint REQUIRED)
 #
 #    # catkin_lint - checks validity of package.xml and CMakeLists.txt
