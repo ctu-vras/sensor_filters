@@ -1,40 +1,56 @@
 <?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <!--
 SPDX-License-Identifier: BSD-3-Clause
 SPDX-FileCopyrightText: Czech Technical University in Prague
 -->
 <package format="3">
   <name>sensor_filters</name>
-  <version>1.1.1</version>
+  <version>2.0.0</version>
   <description>Simple sensor filter chain nodes and nodelets</description>
 
   <maintainer email="peckama2@fel.cvut.cz">Martin Pecka</maintainer>
-  <author email="peckama2@fel.cvut.cz">Martin Pecka</author>
 
-  <license>BSD</license>
+  <license file="LICENSE">BSD</license>
 
-  <url type="website">https://github.com/ctu-vras/sensor_filters</url>
+  <url type="website">https://index.ros.org/p/sensor_filters</url>
+  <url type="bugtracker">https://github.com/ctu-vras/sensor_filters/issues</url>
+  <url type="repository">https://github.com/ctu-vras/sensor_filters</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <author>Martin Pecka</author>
+  <author>solonovamax</author>
 
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>boost</depend>
   <depend>filters</depend>
-  <depend>nodelet</depend>
-  <depend>roscpp</depend>
+  <depend>image_transport</depend>
+  <depend>lifecycle_msgs</depend>
+  <depend>pluginlib</depend>
+  <depend>point_cloud_transport</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>rclcpp_lifecycle</depend>
+  <depend>rosidl_runtime_cpp</depend>
   <depend>sensor_msgs</depend>
 
-  <build_depend>image_transport</build_depend>
-  <build_depend>point_cloud_transport</build_depend>
+  <build_depend>backward_ros</build_depend>
 
-  <exec_depend>image_transport</exec_depend>
-  <exec_depend>point_cloud_transport</exec_depend>
+  <exec_depend>backward_ros</exec_depend>
 
-  <test_depend condition="$ROS_PYTHON_VERSION == 2">python-catkin-lint</test_depend>
-  <test_depend condition="$ROS_PYTHON_VERSION == 3">python3-catkin-lint</test_depend>
-  <test_depend>roslint</test_depend>
+  <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>compressed_image_transport</test_depend>
+  <test_depend condition="$ROS_DISTRO &gt;= 'jazzy'">cras_lint</test_depend>
+  <test_depend>draco_point_cloud_transport</test_depend>
+  <test_depend>laser_filters</test_depend>
+  <test_depend>launch</test_depend>
+  <test_depend>launch_ros</test_depend>
+  <test_depend>launch_testing</test_depend>
+  <test_depend>launch_testing_ament_cmake</test_depend>
+  <test_depend>rclpy</test_depend>
+  <test_depend>ros_testing</test_depend>
 
   <export>
-    <nodelet plugin="${prefix}/nodelets.xml" />
-
-    <filters plugin="${prefix}/ChangeHeaderFilter.xml" />
+    <build_type>ament_cmake</build_type>
   </export>
 </package>

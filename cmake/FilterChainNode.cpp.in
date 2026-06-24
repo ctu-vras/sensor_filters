@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: BSD-3-Clause
+// SPDX-FileCopyrightText: Czech Technical University in Prague
+
+#include <sensor_filters/FilterChainNode.hpp>
+@BASE_INCLUDE@
+#include <@MESSAGE_HEADER@>
+
+namespace sensor_filters {
+
+class @CLASS_NAME@ : public FilterChainNode<@TEMPLATE_ARGS@> {
+public:
+    explicit @CLASS_NAME@(const rclcpp::NodeOptions& options) : FilterChainNode("@NODE_NAME@", options) {}
+};
+
+}
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(sensor_filters::@CLASS_NAME@)

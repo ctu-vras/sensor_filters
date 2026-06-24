@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <!--
 SPDX-License-Identifier: Unlicense
 SPDX-FileCopyrightText: Czech Technical University in Prague
@@ -7,9 +8,34 @@ image_transport to subscribe and publish.
 -->
 
 <launch>
-    <node pkg="sensor_filters" type="image_filter_chain" output="screen" name="image_filter">
-        <remap from="~input" to="image" />
-        <remap from="~output" to="image_filtered" />
-        <rosparam command="load" file="$(dirname)/image_filter.yaml" />
+    <arg name="publish_sample_data" default="false" />
+    <arg name="log_level" default="INFO" />
+    <arg name="lifecycle" default="false" />
+
+    <let name="lifecycle_suffix" value="" unless="$(var lifecycle)" />
+    <let name="lifecycle_suffix" value="_lifecycle" if="$(var lifecycle)" />
+
+    <node pkg="sensor_filters" exec="image_filter_chain$(var lifecycle_suffix)" output="screen" name="image_filter" args="--ros-args --log-level $(var log_level)">
+        <remap from="input" to="image" />
+        <remap from="output" to="image_filtered" />
+        <param from="$(dirname)/image_filter.yaml" allow_substs="true" />
     </node>
+
+    <group if="$(var publish_sample_data)">
+        <executable name="pub" cmd="ros2 topic pub /image_raw sensor_msgs/Image '{
+            header: {stamp: {sec: 10, nanosec: 0}, frame_id: &quot;camera&quot;},
+            height: 1,
+            width: 1,
+            encoding: &quot;mono8&quot;,
+            is_bigendian: false,
+            step: 1,
+            data: [0],
+            }'"/>
+        <node name="encode" pkg="image_transport" exec="republish">
+            <param name="in_transport" value="raw" />
+            <param name="out_transport" value="compressed" />
+            <remap from="in" to="/image_raw" />
+            <remap from="out/compressed" to="/image/compressed" />
+        </node>
+    </group>
 </launch>

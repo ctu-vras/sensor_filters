@@ -1,0 +1,21 @@
+// SPDX-License-Identifier: BSD-3-Clause
+// SPDX-FileCopyrightText: Czech Technical University in Prague
+
+#pragma once
+
+/**
+ * \file
+ * \brief This is a shim for ROS Kilted and older which hacks in a way to get a shared_ptr on Node from a raw pointer.
+ *        This is needed because shared_from_this() can't be used in node constructors.
+ */
+
+#include <rclcpp/node.hpp>
+#include <sensor_filters/NodeInterfaces.hpp>
+
+namespace sensor_filters {
+
+rclcpp::Node::SharedPtr GetNodeSharedPtrFromRawPtr(rclcpp::Node* node);
+
+rclcpp::Node::SharedPtr GetNodeSharedPtrFromInterfaces(RequiredInterfaces node_interfaces);
+
+}  // namespace sensor_filters

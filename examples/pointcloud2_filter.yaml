@@ -3,12 +3,18 @@
 
 # An example launch file for running a filter on PointCloud2 messages. This example showcases that the filter chain uses
 # point_cloud_transport to subscribe and publish.
+# Author: Martin Pecka
 
-point_cloud_transport: draco
-output_queue_size: 10
-cloud_filter_chain:
-  # This filter will subtract 25 ms from each cloud timestamp, e.g. to account for transport delay.
-  - name: delay
-    type: sensor_filters/ChangeHeader/PointCloud2
-    params:
-      stamp_relative: -0.025
+/**:
+  ros__parameters:
+    point_cloud_transport: draco  # this transport is used for subscribing the filter input
+    output_queue_size: 10
+    publication_type: shared_ptr
+    is_lazy: false
+    pointcloud2_filter_chain:
+      filter1:
+        # This filter will subtract 25 ms from each cloud timestamp, e.g. to account for transport delay.
+        name: delay
+        type: sensor_filters/ChangeHeader_PointCloud2
+        params:
+          stamp_relative: -0.025
