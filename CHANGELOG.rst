@@ -5,6 +5,20 @@
 Changelog for package sensor_filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added integration tests.
+* Fixed license issues, made the repo REUSE-compliant.
+* Added support for lazy input topics.
+* Added support for content filters on subscriber.
+* Allow overriding QoS settings.
+* Add new message types for joy feedback array, fluid pressure, illuminance and other
+* Use node interfaces in transport-based chains if available.
+* Add image and pointcloud2 filter chains
+* Add lifecycle nodes
+* Port to ROS 2
+* Contributors: Martin Pecka, solonovamax
+
 1.1.1 (2023-06-07)
 ------------------
 * Reformatted, added catkin lint.
