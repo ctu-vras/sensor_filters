@@ -3,6 +3,9 @@ SPDX-License-Identifier: BSD-3-Clause
 SPDX-FileCopyrightText: Czech Technical University in Prague
 -->
 
+> [!NOTE]
+> This is the ROS 1 version of the package. ROS 2 version can be found on `ros2` branch.
+
 # sensor\_filters
 
 This package is a collection of nodes and nodelets that service a `filters::FilterChain` for message types from `sensor_msgs` package.
