@@ -34,7 +34,7 @@ jobs:
       VERBOSE_OUTPUT: &verbose true
     runs-on: &runs-on ${{ matrix.os }}
     steps: &steps
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       # This step will fetch/store the directory used by ccache before/after the ci run
       - name: Cache ccache
         uses: rhaschke/cache@main
