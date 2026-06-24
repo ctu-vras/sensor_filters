@@ -273,9 +273,12 @@ install(DIRECTORY include/ DESTINATION include)
 install(DIRECTORY cmake/ DESTINATION share/${PROJECT_NAME}/cmake FILES_MATCHING PATTERN "UniversalFilter*")
 
 if(BUILD_TESTING)
-  find_package(cras_lint REQUIRED)
-  cras_lint_common()
-  cras_lint_cpp(SKIP_UNCRUSTIFY)
+  set(ROS_DISTRO_ENV "$ENV{ROS_DISTRO}")
+  if(ROS_DISTRO_ENV STRGREATER_EQUAL "jazzy")
+    find_package(cras_lint REQUIRED)
+    cras_lint_common()
+    cras_lint_cpp(SKIP_UNCRUSTIFY)
+  endif()
 
 #    find_package(roslint REQUIRED)
 #
