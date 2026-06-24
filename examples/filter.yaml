@@ -8,6 +8,7 @@
   ros__parameters:
     output_queue_size: 100
     publication_type: unique_ptr
+    is_lazy: false
     laser_scan_filter_chain:
       filter1:
         # Warning: using laser_filters like this might fail if they need to wait for some TFs; intensity filter does not.

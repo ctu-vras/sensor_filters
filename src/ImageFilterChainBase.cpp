@@ -26,8 +26,25 @@ namespace sensor_filters {
 #ifdef IMAGE_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE
         this->nodePtr = get_node_shared_ptr_from_interfaces(nodeInterfaces);
         this->it = std::make_unique<image_transport::ImageTransport>(this->nodePtr);
+        this->transportHints = std::make_unique<image_transport::TransportHints>(this->nodePtr.get());
 #else
         this->it = std::make_unique<image_transport::ImageTransport>(nodeInterfaces);
+        this->transportHints = std::make_unique<image_transport::TransportHints>(this->nodeInterfaces);
+#endif
+    }
+
+    void ImageFilterChainBase::on_configure()
+    {
+        FilterChainBase<sensor_msgs::msg::Image>::on_configure();
+
+#ifdef IMAGE_TRANSPORT_PUB_OPTIONS_NOT_AVAILABLE
+        if (this->options.isLazy)
+        {
+            RCLCPP_ERROR(this->nodeInterfaces.get_node_logging_interface()->get_logger(),
+                "Lazy input topic is not available for images in Humble.");
+            this->options.isLazy = false;
+            this->subscribe("input");
+        }
 #endif
     }
 
@@ -71,12 +88,22 @@ namespace sensor_filters {
             topics->resolve_topic_name(topic), this->options.inputQueueSize,
             [this](const sensor_msgs::msg::Image::ConstSharedPtr& msg) {
                 this->callbackShared(msg);
-            }, {}, nullptr, this->subscriptionOptions);
+            }, {}, this->transportHints.get(), this->subscriptionOptions);
     }
 
     void ImageFilterChainBase::unsubscribe()
     {
         this->itSubscriber.shutdown();
+    }
+
+    bool ImageFilterChainBase::isSubscribed() const
+    {
+        return this->itSubscriber;
+    }
+
+    size_t ImageFilterChainBase::getNumSubscribers() const
+    {
+        return this->itPublisher ? this->itPublisher.getNumSubscribers() : 0u;
     }
 
     void ImageFilterChainBase::publishUnique(sensor_msgs::msg::Image::UniquePtr msg)

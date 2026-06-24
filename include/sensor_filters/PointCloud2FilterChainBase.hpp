@@ -33,6 +33,8 @@ namespace sensor_filters {
 
         void subscribe(const std::string& topic) override;
         void unsubscribe() override;
+        bool isSubscribed() const override;
+        size_t getNumSubscribers() const override;
 
         void publishUnique(sensor_msgs::msg::PointCloud2::UniquePtr) override;
         void publishShared(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg) override;
@@ -43,6 +45,7 @@ namespace sensor_filters {
 	    rclcpp::Node::SharedPtr nodePtr;
 #endif
         std::unique_ptr<point_cloud_transport::PointCloudTransport> pct;
+        std::unique_ptr<point_cloud_transport::TransportHints> transportHints;
         point_cloud_transport::Publisher pctPublisher;
         point_cloud_transport::Subscriber pctSubscriber;
     };

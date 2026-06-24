@@ -21,6 +21,8 @@ FilterChainBaseGeneric::FilterChainBaseGeneric(RequiredInterfaces nodeInterfaces
   params->declare_parameter(
     "publication_type", rclcpp::ParameterValue(to_string(defaultOptions.publicationType)));
   params->declare_parameter(
+    "is_lazy", rclcpp::ParameterValue(defaultOptions.isLazy));
+  params->declare_parameter(
     "content_filter_expression", rclcpp::ParameterValue(std::string{}));
   params->declare_parameter(
     "content_filter_parameters", rclcpp::ParameterValue(std::vector<std::string>{}));
@@ -33,6 +35,7 @@ void FilterChainBaseGeneric::on_configure()
 
   this->options.inputQueueSize = paramsInterface->get_parameter("input_queue_size").as_int();
   this->options.outputQueueSize = paramsInterface->get_parameter("output_queue_size").as_int();
+  this->options.isLazy = paramsInterface->get_parameter("is_lazy").as_bool();
 
   this->options.subscriptionType = parseMessagePassingType(
     paramsInterface->get_parameter("subscription_type").as_string());
@@ -53,6 +56,28 @@ void FilterChainBaseGeneric::on_configure()
   }
 
   this->publisherOptions.qos_overriding_options = this->qosOverrides;
+  if (this->options.isLazy) {
+#ifndef MATCHED_EVENT_NOT_AVAILABLE
+    this->publisherOptions.event_callbacks.matched_callback = [this](const rclcpp::MatchedInfo&) {
+      std::lock_guard<std::mutex> lock(this->subscriptionMutex);
+      if (this->getNumSubscribers() == 0)
+      {
+        this->unsubscribe();
+        RCLCPP_INFO(this->nodeInterfaces.get_node_logging_interface()->get_logger(),
+          "Unsubscribed from lazy input topic");
+      }
+      else if (!this->isSubscribed())
+      {
+        this->subscribe("input");
+        RCLCPP_INFO(this->nodeInterfaces.get_node_logging_interface()->get_logger(), "Subscribed to lazy input topic");
+      }
+    };
+#else
+    RCLCPP_ERROR(this->nodeInterfaces.get_node_logging_interface()->get_logger(),
+      "Lazy input topic is not available prior ROS 2 Iron.");
+    this->options.isLazy = false;
+#endif
+  }
 
   this->subscriptionOptions.qos_overriding_options = this->qosOverrides;
   this->subscriptionOptions.content_filter_options.filter_expression =
@@ -63,12 +88,17 @@ void FilterChainBaseGeneric::on_configure()
   this->on_configure_chain();
 
   this->advertise("output");
-  this->subscribe("input");
+  if (!this->options.isLazy)
+    this->subscribe("input");
 }
 
 void FilterChainBaseGeneric::on_cleanup()
 {
-  this->unsubscribe();
+  {
+    std::lock_guard<std::mutex> lock(this->subscriptionMutex);
+    if (this->isSubscribed())
+      this->unsubscribe();
+  }
   this->unadvertise();
 
   this->options = this->defaultOptions;

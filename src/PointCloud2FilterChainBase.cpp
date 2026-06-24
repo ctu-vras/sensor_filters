@@ -23,8 +23,10 @@ namespace sensor_filters {
 #ifdef POINT_CLOUD_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE
         this->nodePtr = get_node_shared_ptr_from_interfaces(nodeInterfaces);
         this->pct = std::make_unique<point_cloud_transport::PointCloudTransport>(this->nodePtr);
+        this->transportHints = std::make_unique<point_cloud_transport::TransportHints>(this->nodePtr);
 #else
         this->pct = std::make_unique<point_cloud_transport::PointCloudTransport>(nodeInterfaces);
+        this->transportHints = std::make_unique<point_cloud_transport::TransportHints>(this->nodeInterfaces);
 #endif
     }
 
@@ -61,7 +63,7 @@ namespace sensor_filters {
             [this](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg) {
                 this->callbackShared(msg);
             },
-            this->pct->getTransportOrDefault(nullptr),
+            this->pct->getTransportOrDefault(this->transportHints.get()),
             rclcpp::QoS(this->options.inputQueueSize).get_rmw_qos_profile(), this->subscriptionOptions);
 #else
         this->pctSubscriber = this->pct->subscribe(
@@ -75,6 +77,22 @@ namespace sensor_filters {
     void PointCloud2FilterChainBase::unsubscribe()
     {
         this->pctSubscriber.shutdown();
+    }
+
+    bool PointCloud2FilterChainBase::isSubscribed() const
+    {
+        return this->pctSubscriber;
+    }
+
+    size_t PointCloud2FilterChainBase::getNumSubscribers() const
+    {
+        if (!this->pctPublisher)
+            return 0u;
+
+        size_t count {0u};
+        for (const auto& [topic, pub] : this->pctPublisher.getPublishers())
+            count += pub->get_subscription_count() + pub->get_subscription_count();
+        return count;
     }
 
     void PointCloud2FilterChainBase::publishUnique(sensor_msgs::msg::PointCloud2::UniquePtr)

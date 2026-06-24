@@ -10,6 +10,7 @@
     point_cloud_transport: draco  # this transport is used for subscribing the filter input
     output_queue_size: 10
     publication_type: shared_ptr
+    is_lazy: false
     pointcloud2_filter_chain:
       filter1:
         # This filter will subtract 25 ms from each cloud timestamp, e.g. to account for transport delay.

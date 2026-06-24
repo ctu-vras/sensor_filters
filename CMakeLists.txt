@@ -56,6 +56,9 @@ target_include_directories(filter_chain_base PRIVATE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
+if(rclcpp_VERSION VERSION_LESS 20.0.0)
+    target_compile_definitions(filter_chain_base PUBLIC MATCHED_EVENT_NOT_AVAILABLE)
+endif()
 
 macro(add_filter_chain_node arg_TARGET_NAME arg_CLASS_NAME arg_FILENAME)
     set(options)

@@ -24,6 +24,8 @@ namespace sensor_filters {
             const std::string& name = "image_filter_chain",
             const FilterChainOptions& defaultChainOptions = DEFAULT_CHAIN_OPTIONS);
 
+        void on_configure() override;
+
     protected:
         bool validateSubscriptionType() const override;
         bool validatePublicationType() const override;
@@ -33,6 +35,8 @@ namespace sensor_filters {
 
         void subscribe(const std::string& topic) override;
         void unsubscribe() override;
+        bool isSubscribed() const override;
+        size_t getNumSubscribers() const override;
 
         void publishUnique(sensor_msgs::msg::Image::UniquePtr msg) override;
         void publishShared(const sensor_msgs::msg::Image::ConstSharedPtr& msg) override;
@@ -43,6 +47,7 @@ namespace sensor_filters {
         rclcpp::Node::SharedPtr nodePtr;
 #endif
         std::unique_ptr<image_transport::ImageTransport> it;
+        std::unique_ptr<image_transport::TransportHints> transportHints;
         image_transport::Publisher itPublisher;
         image_transport::Subscriber itSubscriber;
     };

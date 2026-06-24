@@ -12,6 +12,7 @@
 #include <cassert>
 #include <cctype>
 #include <memory>
+#include <mutex>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -39,6 +40,7 @@ namespace sensor_filters {
         size_t outputQueueSize {10U};
         MessagePassingType subscriptionType {MessagePassingType::UNIQUE_PTR};
         MessagePassingType publicationType {MessagePassingType::UNIQUE_PTR};
+        bool isLazy {false};
     };
 
     inline MessagePassingType parseMessagePassingType(const std::string& type)
@@ -103,6 +105,8 @@ namespace sensor_filters {
 
         rclcpp::Clock wallClock {RCL_SYSTEM_TIME};
 
+        std::mutex subscriptionMutex;
+
     public:
         FilterChainBaseGeneric(RequiredInterfaces nodeInterfaces, std::string messageType,
             std::string filterChainNamespace, const FilterChainOptions& defaultOptions = {});
@@ -123,6 +127,10 @@ namespace sensor_filters {
         virtual void subscribe(const std::string& topic) = 0;
 
         virtual void unsubscribe() = 0;
+
+        virtual bool isSubscribed() const = 0;
+
+        virtual size_t getNumSubscribers() const = 0;
 
         virtual bool validateSubscriptionType() const;
 
@@ -316,6 +324,20 @@ namespace sensor_filters {
         void unsubscribe() override
         {
             this->inputSubscriber.reset();
+        }
+
+        bool isSubscribed() const override
+        {
+            return this->inputSubscriber != nullptr;
+        }
+
+        size_t getNumSubscribers() const override
+        {
+            if (this->outputPublisher == nullptr)
+                return 0u;
+
+            return this->outputPublisher->get_subscription_count() +
+                this->outputPublisher->get_intra_process_subscription_count();
         }
 
         void publishUnique(typename T::UniquePtr msg) override
