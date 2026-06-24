@@ -205,16 +205,13 @@ See the [examples folder](https://github.com/ctu-vras/sensor_filters/tree/ros2/e
 ### Custom plain node
 
 ```c++
-#include <sensor_msgs/msg/point_cloud2.hpp>
+#include <rclcpp/node_options.hpp>
+#include <sensor_msgs/msg/laser_scan.hpp>
 #include <sensor_filters/FilterChainNode.hpp>
-#include <sensor_filters/PointCloud2FilterChainBase.hpp>
 
-class MyNode
-: public sensor_filters::FilterChainNode<sensor_msgs::msg::PointCloud2, sensor_filters::PointCloud2FilterChainBase>
-{
+class MyNode : public sensor_filters::FilterChainNode<sensor_msgs::msg::LaserScan> {
 public:
-  explicit MyNode(const rclcpp::NodeOptions& options) : FilterChainNode("my_filter_chain", options) {
-  }
+  explicit MyNode(const rclcpp::NodeOptions& options) : FilterChainNode("my_filter_chain", options) {}
 };
 
 #include <rclcpp_components/register_node_macro.hpp>
@@ -224,16 +221,13 @@ RCLCPP_COMPONENTS_REGISTER_NODE(MyNode)
 ### Custom lifecycle node
 
 ```c++
-#include <sensor_msgs/msg/point_cloud2.hpp>
+#include <rclcpp/node_options.hpp>
+#include <sensor_msgs/msg/laser_scan.hpp>
 #include <sensor_filters/FilterChainNode.hpp>
-#include <sensor_filters/PointCloud2FilterChainBase.hpp>
 
-class MyLifecycleNode
-: public sensor_filters::LifecycleFilterChainNode<sensor_msgs::msg::PointCloud2, sensor_filters::PointCloud2FilterChainBase>
-{
+class MyLifecycleNode : public sensor_filters::LifecycleFilterChainNode<sensor_msgs::msg::LaserScan> {
 public:
-  explicit MyLifecycleNode(const rclcpp::NodeOptions& options) : LifecycleFilterChainNode("my_filter_chain", options) {
-  }
+  explicit MyLifecycleNode(const rclcpp::NodeOptions& options) : LifecycleFilterChainNode("my_filter_chain", options) {}
 };
 
 #include <rclcpp_components/register_node_macro.hpp>
