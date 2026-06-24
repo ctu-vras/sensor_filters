@@ -75,7 +75,7 @@ set_target_properties(${PROJECT_NAME}_node_helper PROPERTIES POSITION_INDEPENDEN
 # sensor_filters_image_filter_chain_base
 add_library(${PROJECT_NAME}_image_filter_chain_base SHARED src/ImageFilterChainBase.cpp)
 target_link_libraries(${PROJECT_NAME}_image_filter_chain_base
-  PUBLIC ${LIBRARY_TARGETS} image_transport::image_transport
+  PUBLIC ${LIBRARY_TARGETS} image_transport::image_transport filter_chain_base
   PRIVATE ${PROJECT_NAME}_node_helper
 )
 target_include_directories(${PROJECT_NAME}_image_filter_chain_base PUBLIC
@@ -93,7 +93,7 @@ endif()
 # sensor_filters_pointcloud2_filter_chain_base
 add_library(${PROJECT_NAME}_pointcloud2_filter_chain_base SHARED src/PointCloud2FilterChainBase.cpp)
 target_link_libraries(${PROJECT_NAME}_pointcloud2_filter_chain_base
-  PUBLIC ${LIBRARY_TARGETS} point_cloud_transport::point_cloud_transport
+  PUBLIC ${LIBRARY_TARGETS} point_cloud_transport::point_cloud_transport filter_chain_base
   PRIVATE ${PROJECT_NAME}_node_helper
 )
 target_include_directories(${PROJECT_NAME}_pointcloud2_filter_chain_base PUBLIC
