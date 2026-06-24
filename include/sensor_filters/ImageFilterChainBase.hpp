@@ -16,40 +16,40 @@ namespace sensor_filters {
 
     class ImageFilterChainBase : public FilterChainBase<sensor_msgs::msg::Image> {
     public:
-        constexpr static FilterChainOptions DEFAULT_CHAIN_OPTIONS = {
+        constexpr static FilterChainOptions kDefaultChainOptions = {
             10U, 10U, MessagePassingType::SHARED_PTR, MessagePassingType::SHARED_PTR
         };
 
-        explicit ImageFilterChainBase(RequiredInterfaces nodeInterfaces,
+        explicit ImageFilterChainBase(RequiredInterfaces node_interfaces,
             const std::string& name = "image_filter_chain",
-            const FilterChainOptions& defaultChainOptions = DEFAULT_CHAIN_OPTIONS);
+            const FilterChainOptions& default_chain_options = kDefaultChainOptions);
 
         void on_configure() override;
 
     protected:
-        bool validateSubscriptionType() const override;
-        bool validatePublicationType() const override;
+        bool ValidateSubscriptionType() const override;
+        bool ValidatePublicationType() const override;
 
-        void advertise(const std::string& topic) override;
-        void unadvertise() override;
+        void Advertise(const std::string& topic) override;
+        void Unadvertise() override;
 
-        void subscribe(const std::string& topic) override;
-        void unsubscribe() override;
-        bool isSubscribed() const override;
-        size_t getNumSubscribers() const override;
+        void Subscribe(const std::string& topic) override;
+        void Unsubscribe() override;
+        bool IsSubscribed() const override;
+        size_t GetNumSubscribers() const override;
 
-        void publishUnique(sensor_msgs::msg::Image::UniquePtr msg) override;
-        void publishShared(const sensor_msgs::msg::Image::ConstSharedPtr& msg) override;
-        void publishReference(const sensor_msgs::msg::Image& msg) override;
+        void PublishUnique(sensor_msgs::msg::Image::UniquePtr msg) override;
+        void PublishShared(const sensor_msgs::msg::Image::ConstSharedPtr& msg) override;
+        void PublishReference(const sensor_msgs::msg::Image& msg) override;
 
     private:
 #ifdef IMAGE_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE
-        rclcpp::Node::SharedPtr nodePtr;
+        rclcpp::Node::SharedPtr node_ptr_;
 #endif
-        std::unique_ptr<image_transport::ImageTransport> it;
-        std::unique_ptr<image_transport::TransportHints> transportHints;
-        image_transport::Publisher itPublisher;
-        image_transport::Subscriber itSubscriber;
+        std::unique_ptr<image_transport::ImageTransport> it_;
+        std::unique_ptr<image_transport::TransportHints> transport_hints_;
+        image_transport::Publisher it_publisher_;
+        image_transport::Subscriber it_subscriber_;
     };
 
 }  // namespace sensor_filters

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <boost/preprocessor/seq/for_each.hpp>
+
 #include <pluginlib/class_list_macros.hpp>
 #include <sensor_msgs/msg/battery_state.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>

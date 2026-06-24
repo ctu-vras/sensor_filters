@@ -16,20 +16,20 @@
 
 namespace sensor_filters {
 
-    ImageFilterChainBase::ImageFilterChainBase(RequiredInterfaces nodeInterfaces,
+    ImageFilterChainBase::ImageFilterChainBase(RequiredInterfaces node_interfaces,
         const std::string& name,
-        const FilterChainOptions& defaultChainOptions): FilterChainBase(nodeInterfaces, name, defaultChainOptions)
+        const FilterChainOptions& default_chain_options): FilterChainBase(node_interfaces, name, default_chain_options)
     {
-        const auto params = nodeInterfaces.get_node_parameters_interface();
+        const auto params = node_interfaces.get_node_parameters_interface();
         // image_transport does not declare the parameter
         params->declare_parameter("image_transport", rclcpp::ParameterValue("raw"));
 #ifdef IMAGE_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE
-        this->nodePtr = get_node_shared_ptr_from_interfaces(nodeInterfaces);
-        this->it = std::make_unique<image_transport::ImageTransport>(this->nodePtr);
-        this->transportHints = std::make_unique<image_transport::TransportHints>(this->nodePtr.get());
+        node_ptr_ = GetNodeSharedPtrFromInterfaces(node_interfaces);
+        it_ = std::make_unique<image_transport::ImageTransport>(node_ptr_);
+        transport_hints_ = std::make_unique<image_transport::TransportHints>(node_ptr_.get());
 #else
-        this->it = std::make_unique<image_transport::ImageTransport>(nodeInterfaces);
-        this->transportHints = std::make_unique<image_transport::TransportHints>(this->nodeInterfaces);
+        it_ = std::make_unique<image_transport::ImageTransport>(node_interfaces);
+        transport_hints_ = std::make_unique<image_transport::TransportHints>(node_interfaces_);
 #endif
     }
 
@@ -38,87 +38,87 @@ namespace sensor_filters {
         FilterChainBase<sensor_msgs::msg::Image>::on_configure();
 
 #ifdef IMAGE_TRANSPORT_PUB_OPTIONS_NOT_AVAILABLE
-        if (this->options.isLazy)
+        if (options_.is_lazy)
         {
-            RCLCPP_ERROR(this->nodeInterfaces.get_node_logging_interface()->get_logger(),
+            RCLCPP_ERROR(node_interfaces_.get_node_logging_interface()->get_logger(),
                 "Lazy input topic is not available for images in Humble.");
-            this->options.isLazy = false;
-            this->subscribe("input");
+            options_.is_lazy = false;
+            Subscribe("input");
         }
 #endif
     }
 
-    bool ImageFilterChainBase::validateSubscriptionType() const
+    bool ImageFilterChainBase::ValidateSubscriptionType() const
     {
-        return this->options.subscriptionType == MessagePassingType::SHARED_PTR;
+        return options_.subscription_type == MessagePassingType::SHARED_PTR;
     }
 
-    bool ImageFilterChainBase::validatePublicationType() const
+    bool ImageFilterChainBase::ValidatePublicationType() const
     {
         return true;
     }
 
-    void ImageFilterChainBase::advertise(const std::string& topic)
+    void ImageFilterChainBase::Advertise(const std::string& topic)
     {
-        const auto topics = this->nodeInterfaces.get_node_topics_interface();
+        const auto topics = node_interfaces_.get_node_topics_interface();
 
 #ifdef IMAGE_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE
-        this->itPublisher = image_transport::create_publisher(this->nodePtr.get(), topics->resolve_topic_name(topic),
-            rclcpp::QoS(this->options.outputQueueSize).get_rmw_qos_profile()
+        it_publisher_ = image_transport::create_publisher(node_ptr_.get(), topics->resolve_topic_name(topic),
+            rclcpp::QoS(options_.output_queue_size).get_rmw_qos_profile()
 #ifndef IMAGE_TRANSPORT_PUB_OPTIONS_NOT_AVAILABLE
-            , this->publisherOptions
+            , publisher_options_
 #endif
             );
 #else
-        this->itPublisher = image_transport::create_publisher(this->nodeInterfaces, topics->resolve_topic_name(topic),
-            rclcpp::QoS(this->options.outputQueueSize), this->publisherOptions);
+        it_publisher_ = image_transport::create_publisher(node_interfaces_, topics->resolve_topic_name(topic),
+            rclcpp::QoS(options_.output_queue_size), publisher_options_);
 #endif
     }
 
-    void ImageFilterChainBase::unadvertise()
+    void ImageFilterChainBase::Unadvertise()
     {
-        this->itPublisher.shutdown();
+        it_publisher_.shutdown();
     }
 
-    void ImageFilterChainBase::subscribe(const std::string& topic)
+    void ImageFilterChainBase::Subscribe(const std::string& topic)
     {
-        const auto topics = this->nodeInterfaces.get_node_topics_interface();
+        const auto topics = node_interfaces_.get_node_topics_interface();
 
-        this->itSubscriber = this->it->subscribe(
-            topics->resolve_topic_name(topic), this->options.inputQueueSize,
+        it_subscriber_ = it_->subscribe(
+            topics->resolve_topic_name(topic), options_.input_queue_size,
             [this](const sensor_msgs::msg::Image::ConstSharedPtr& msg) {
-                this->callbackShared(msg);
-            }, {}, this->transportHints.get(), this->subscriptionOptions);
+                this->CallbackShared(msg);
+            }, {}, transport_hints_.get(), subscription_options_);
     }
 
-    void ImageFilterChainBase::unsubscribe()
+    void ImageFilterChainBase::Unsubscribe()
     {
-        this->itSubscriber.shutdown();
+        it_subscriber_.shutdown();
     }
 
-    bool ImageFilterChainBase::isSubscribed() const
+    bool ImageFilterChainBase::IsSubscribed() const
     {
-        return this->itSubscriber;
+        return it_subscriber_;
     }
 
-    size_t ImageFilterChainBase::getNumSubscribers() const
+    size_t ImageFilterChainBase::GetNumSubscribers() const
     {
-        return this->itPublisher ? this->itPublisher.getNumSubscribers() : 0u;
+        return it_publisher_ ? it_publisher_.getNumSubscribers() : 0u;
     }
 
-    void ImageFilterChainBase::publishUnique(sensor_msgs::msg::Image::UniquePtr msg)
+    void ImageFilterChainBase::PublishUnique(sensor_msgs::msg::Image::UniquePtr msg)
     {
-        this->itPublisher.publish(std::move(msg));
+        it_publisher_.publish(std::move(msg));
     }
 
-    void ImageFilterChainBase::publishShared(const sensor_msgs::msg::Image::ConstSharedPtr& msg)
+    void ImageFilterChainBase::PublishShared(const sensor_msgs::msg::Image::ConstSharedPtr& msg)
     {
-        this->itPublisher.publish(msg);
+        it_publisher_.publish(msg);
     }
 
-    void ImageFilterChainBase::publishReference(const sensor_msgs::msg::Image& msg)
+    void ImageFilterChainBase::PublishReference(const sensor_msgs::msg::Image& msg)
     {
-        this->itPublisher.publish(msg);
+        it_publisher_.publish(msg);
     }
 
 }  // namespace sensor_filters

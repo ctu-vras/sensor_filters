@@ -15,8 +15,8 @@
 namespace sensor_filters
 {
 
-rclcpp::Node::SharedPtr get_node_shared_ptr_from_raw_ptr(rclcpp::Node* node);
+rclcpp::Node::SharedPtr GetNodeSharedPtrFromRawPtr(rclcpp::Node* node);
 
-rclcpp::Node::SharedPtr get_node_shared_ptr_from_interfaces(RequiredInterfaces nodeInterfaces);
+rclcpp::Node::SharedPtr GetNodeSharedPtrFromInterfaces(RequiredInterfaces node_interfaces);
 
 } // namespace sensor_filters

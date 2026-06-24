@@ -15,26 +15,26 @@ namespace sensor_filters {
     protected:
         bool configure() override {
             {
-                std::string frameIdParam;
-                if (this->getParam("frame_id_prefix", frameIdParam) && !frameIdParam.empty())
-                    this->newFrameIdPrefix = frameIdParam;
+                std::string frame_id_param;
+                if (this->getParam("frame_id_prefix", frame_id_param) && !frame_id_param.empty())
+                    new_frame_id_prefix_ = frame_id_param;
 
-                if (this->getParam("frame_id_suffix", frameIdParam) && !frameIdParam.empty())
-                    this->newFrameIdSuffix = frameIdParam;
+                if (this->getParam("frame_id_suffix", frame_id_param) && !frame_id_param.empty())
+                    new_frame_id_suffix_ = frame_id_param;
 
-                if (this->getParam("frame_id", frameIdParam, true, "?") && frameIdParam != "?")
-                    this->newFrameId = frameIdParam;
+                if (this->getParam("frame_id", frame_id_param, true, "?") && frame_id_param != "?")
+                    new_frame_id_ = frame_id_param;
             }
 
             {
-                const auto nan = std::numeric_limits<double>::quiet_NaN();
-                double stampParam {nan};
-                if (this->getParam("stamp_relative", stampParam, true, nan) && std::isfinite(stampParam))
-                    this->newStampRel = rclcpp::Duration::from_seconds(stampParam);
+                const auto kNan = std::numeric_limits<double>::quiet_NaN();
+                double stampParam {kNan};
+                if (this->getParam("stamp_relative", stampParam, true, kNan) && std::isfinite(stampParam))
+                    new_stamp_rel_ = rclcpp::Duration::from_seconds(stampParam);
 
-                if (this->getParam("stamp", stampParam, true, nan) && std::isfinite(stampParam)) {
+                if (this->getParam("stamp", stampParam, true, kNan) && std::isfinite(stampParam)) {
                     const auto nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::duration<double>(stampParam));
-                    this->newStampAbs = rclcpp::Time(nanos.count());
+                    new_stamp_abs_ = rclcpp::Time(nanos.count());
                 }
             }
 
@@ -45,32 +45,32 @@ namespace sensor_filters {
         bool update(const T& data_in, T& data_out) override {
             data_out = data_in;
 
-            if (this->newFrameIdPrefix.has_value())
-                data_out.header.frame_id = this->newFrameIdPrefix.value() + data_out.header.frame_id;
+            if (new_frame_id_prefix_.has_value())
+                data_out.header.frame_id = new_frame_id_prefix_.value() + data_out.header.frame_id;
 
-            if (this->newFrameIdSuffix.has_value())
-                data_out.header.frame_id += this->newFrameIdSuffix.value();
+            if (new_frame_id_suffix_.has_value())
+                data_out.header.frame_id += new_frame_id_suffix_.value();
 
-            if (this->newFrameId.has_value())
-                data_out.header.frame_id = this->newFrameId.value();
+            if (new_frame_id_.has_value())
+                data_out.header.frame_id = new_frame_id_.value();
 
-            if (this->newStampRel.has_value())
-                data_out.header.stamp = rclcpp::Time(data_out.header.stamp) + this->newStampRel.value();
+            if (new_stamp_rel_.has_value())
+                data_out.header.stamp = rclcpp::Time(data_out.header.stamp) + new_stamp_rel_.value();
 
-            if (this->newStampAbs.has_value())
-                data_out.header.stamp = this->newStampAbs.value();
+            if (new_stamp_abs_.has_value())
+                data_out.header.stamp = new_stamp_abs_.value();
 
             return true;
         }
 
     private:
-        std::optional<std::string> newFrameId;
-        std::optional<std::string> newFrameIdPrefix;
-        std::optional<std::string> newFrameIdSuffix;
+        std::optional<std::string> new_frame_id_;
+        std::optional<std::string> new_frame_id_prefix_;
+        std::optional<std::string> new_frame_id_suffix_;
 
 
-        std::optional<rclcpp::Time> newStampAbs;
-        std::optional<rclcpp::Duration> newStampRel;
+        std::optional<rclcpp::Time> new_stamp_abs_;
+        std::optional<rclcpp::Duration> new_stamp_rel_;
     };
 }
 

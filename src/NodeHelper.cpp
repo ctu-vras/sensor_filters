@@ -29,26 +29,26 @@ struct NodeLike
   uint8_t data[sizeof(rclcpp::Node)];
 };
 
-rclcpp::Node::SharedPtr get_node_shared_ptr_from_interfaces(RequiredInterfaces nodeInterfaces)
+rclcpp::Node::SharedPtr GetNodeSharedPtrFromInterfaces(RequiredInterfaces node_interfaces)
 {
   // This is a trick to create a shared_ptr to Node without calling its constructor. This is super dangerous.
   // Only use it when you know what you're doing. Using any other interfaces on the node than those specified here
   // will lead to segfaults.
-  const auto nodeLike = std::make_shared<NodeLike>();
-  std::fill_n(nodeLike->data, sizeof(NodeLike), 0);
-  auto node = std::reinterpret_pointer_cast<rclcpp::Node>(nodeLike);
+  const auto node_like = std::make_shared<NodeLike>();
+  std::fill_n(node_like->data, sizeof(NodeLike), 0);
+  auto node = std::reinterpret_pointer_cast<rclcpp::Node>(node_like);
 
   // This list is crafted to satisfy both image transport and point cloud transport.
-  node->node_base_ = nodeInterfaces.get_node_base_interface();
-  node->node_logging_ = nodeInterfaces.get_node_logging_interface();
-  node->node_parameters_ = nodeInterfaces.get_node_parameters_interface();
-  node->node_timers_ = nodeInterfaces.get_node_timers_interface();
-  node->node_topics_ = nodeInterfaces.get_node_topics_interface();
+  node->node_base_ = node_interfaces.get_node_base_interface();
+  node->node_logging_ = node_interfaces.get_node_logging_interface();
+  node->node_parameters_ = node_interfaces.get_node_parameters_interface();
+  node->node_timers_ = node_interfaces.get_node_timers_interface();
+  node->node_topics_ = node_interfaces.get_node_topics_interface();
 
   return node;
 }
 
-rclcpp::Node::SharedPtr get_node_shared_ptr_from_raw_ptr(rclcpp::Node* node)
+rclcpp::Node::SharedPtr GetNodeSharedPtrFromRawPtr(rclcpp::Node* node)
 {
   auto shared_node = node->create_sub_node("sub");
   const_cast<std::string&>(shared_node->effective_namespace_) = node->get_effective_namespace();
