@@ -82,6 +82,12 @@ Filters operating on `Image` and `PointCloud2` messages automatically use
 [point_cloud_transport](https://github.com/ros-perception/point_cloud_transport) respectively to publish and subscribe
 to topics. The input transport can be selected with the `image_transport` / `point_cloud_transport` parameter.
 
+PointCloud2 transport uses `SensorDataQoS` by default for publications (in most cases). However, it is not a good
+fit for filters which are usually treated as reliable chains. Therefore, the PointCloud2 filter defaults to reliable
+publishers. If you need to use unreliable publishers by default, either use standard QoS overrides
+or set parameter `default_best_effort_publisher` to true. For symmetry,
+there is also parameter `default_best_effort_subscription` to control the subscriber side.
+
 ### Lazy subscription
 
 Setting `is_lazy: true` causes the node to subscribe to the input topic only when there is at least one subscriber

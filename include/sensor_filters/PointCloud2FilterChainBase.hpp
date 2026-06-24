@@ -24,6 +24,8 @@ public:
     RequiredInterfaces node_interfaces, const std::string& name = "pointcloud2_filter_chain",
     const FilterChainOptions& default_chain_options = kDefaultChainOptions);
 
+  void on_configure() override;
+
 protected:
   bool ValidateSubscriptionType() const override;
 
@@ -51,6 +53,8 @@ private:
 #ifdef POINT_CLOUD_TRANSPORT_NODE_INTERFACES_NOT_AVAILABLE
   rclcpp::Node::SharedPtr node_ptr_;
 #endif
+  bool default_best_effort_subscription_ {false};
+  bool default_best_effort_publisher_ {false};
   std::unique_ptr<point_cloud_transport::PointCloudTransport> pct_;
   std::unique_ptr<point_cloud_transport::TransportHints> transport_hints_;
   point_cloud_transport::Publisher pct_publisher_;
